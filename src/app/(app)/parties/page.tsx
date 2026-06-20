@@ -8,7 +8,7 @@ import {
   getOutstandingPayables,
 } from "@/lib/queries/parties";
 import { getSettings } from "@/lib/queries/dashboard";
-import { PageHeader, EmptyState } from "@/components/ui/page";
+import { PageHeader, EmptyState, ListPage, ListFilterBar, SummaryGrid } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardValue } from "@/components/ui/card";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
@@ -36,12 +36,12 @@ export default async function PartiesPage({ searchParams }: Props) {
   const netPosition = toCollect - toPay;
 
   return (
-    <div>
+    <ListPage>
       <PageHeader title="Parties" description="Customers, suppliers, and credit (udhar)">
         <Link href="/parties/new"><Button>Add Party</Button></Link>
       </PageHeader>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+      <SummaryGrid cols={3}>
         <Card className="border-primary/30 bg-gradient-to-br from-teal-50/80 to-white">
           <CardTitle>To Collect</CardTitle>
           <CardValue className="text-primary">{formatCurrency(toCollect, currency)}</CardValue>
@@ -56,7 +56,7 @@ export default async function PartiesPage({ searchParams }: Props) {
             {formatCurrency(netPosition, currency)}
           </CardValue>
         </Card>
-      </div>
+      </SummaryGrid>
 
       <Suspense fallback={null}>
         <PartiesTabs active={tab} />
@@ -64,16 +64,18 @@ export default async function PartiesPage({ searchParams }: Props) {
 
       {tab === "all" && (
         <>
-          <form className="mb-6 flex flex-wrap gap-3 rounded-xl border border-border bg-card p-4">
-            <input name="search" placeholder="Search name, phone..." defaultValue={params.search}
-              className="h-10 flex-1 rounded-lg border border-border px-3 text-sm min-w-[200px]" />
-            <select name="type" defaultValue={params.type || "all"} className="h-10 rounded-lg border border-border px-3 text-sm">
-              <option value="all">All types</option>
-              <option value="customer">Customers</option>
-              <option value="supplier">Suppliers</option>
-            </select>
-            <Button type="submit">Filter</Button>
-          </form>
+          <ListFilterBar>
+            <form className="flex flex-wrap gap-3">
+              <input name="search" placeholder="Search name, phone..." defaultValue={params.search}
+                className="h-11 min-w-[200px] flex-1 rounded-xl border border-border px-3 text-sm" />
+              <select name="type" defaultValue={params.type || "all"} className="h-11 rounded-xl border border-border px-3 text-sm">
+                <option value="all">All types</option>
+                <option value="customer">Customers</option>
+                <option value="supplier">Suppliers</option>
+              </select>
+              <Button type="submit">Filter</Button>
+            </form>
+          </ListFilterBar>
 
           {parties.length === 0 ? (
             <EmptyState message="No parties yet." actionLabel="Add Party" actionHref="/parties/new" />
@@ -165,6 +167,6 @@ export default async function PartiesPage({ searchParams }: Props) {
           </DataTable>
         )
       )}
-    </div>
+    </ListPage>
   );
 }

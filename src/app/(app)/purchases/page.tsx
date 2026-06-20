@@ -2,10 +2,10 @@ import Link from "next/link";
 import { getPurchasesSummary, getPurchasesList } from "@/lib/queries/purchases";
 import { getSettings } from "@/lib/queries/dashboard";
 import { resolveListDateRange } from "@/lib/date-ranges";
-import { PageHeader, EmptyState } from "@/components/ui/page";
+import { PageHeader, EmptyState, ListPage, ListFilterBar } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { PeriodFilters } from "@/components/ui/period-filters";
-import { Card, CardTitle, CardValue } from "@/components/ui/card";
+import { PurchasesSummaryCards } from "@/components/purchases/purchases-summary-cards";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -29,27 +29,16 @@ export default async function PurchasesPage({ searchParams }: Props) {
   const currency = settings?.currency ?? "Rs.";
 
   return (
-    <div>
+    <ListPage>
       <PageHeader title="Purchases" description="Incoming stock by period">
         <Link href="/purchases/new"><Button>Record Purchase</Button></Link>
       </PageHeader>
 
-      <PeriodFilters dateFrom={dateFrom ?? ""} dateTo={dateTo ?? ""} />
+      <ListFilterBar>
+        <PeriodFilters dateFrom={dateFrom ?? ""} dateTo={dateTo ?? ""} />
+      </ListFilterBar>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardTitle>Purchases</CardTitle>
-          <CardValue>{summary.purchase_count}</CardValue>
-        </Card>
-        <Card>
-          <CardTitle>Total Cost</CardTitle>
-          <CardValue>{formatCurrency(summary.total, currency)}</CardValue>
-        </Card>
-        <Card>
-          <CardTitle>Credit Due</CardTitle>
-          <CardValue className="text-warning">{formatCurrency(summary.credit_due, currency)}</CardValue>
-        </Card>
-      </div>
+      <PurchasesSummaryCards summary={summary} currency={currency} />
 
       {purchases.length === 0 ? (
         <EmptyState message="No purchases in this period." actionLabel="Record Purchase" actionHref="/purchases/new" />
@@ -93,6 +82,6 @@ export default async function PurchasesPage({ searchParams }: Props) {
           </DataTableBody>
         </DataTable>
       )}
-    </div>
+    </ListPage>
   );
 }

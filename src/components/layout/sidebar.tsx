@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { logoutAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/layout/sidebar-context";
 import {
   LayoutDashboard,
   Shirt,
@@ -22,6 +23,9 @@ import {
   X,
   MoreHorizontal,
   ShoppingCart,
+  GripVertical,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 const mainNav = [
@@ -61,6 +65,7 @@ export function Sidebar({
   currency?: string;
 }) {
   const pathname = usePathname();
+  const { collapsed, toggleCollapsed, width } = useSidebar();
   const [open, setOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [logoError, setLogoError] = useState(false);
@@ -72,36 +77,54 @@ export function Sidebar({
 
   const moreActive = mobileMore.some((item) => isNavActive(pathname, item.href));
 
-  const NavContent = () => (
+  const NavContent = ({ mobile = false }: { mobile?: boolean }) => (
     <>
-      <div className="border-b border-white/10 px-4 py-5">
-        <div className="flex items-center gap-3">
+      <div className={cn("border-b border-white/10 px-4 py-5", collapsed && !mobile && "px-3 py-4")}>
+        <div className={cn("flex items-center gap-3", collapsed && !mobile && "justify-center")}>
           {logoUrl && !logoError ? (
-            <img src={logoUrl} alt={businessName} className="h-10 w-10 rounded-xl object-cover" onError={() => setLogoError(true)} />
+            <img
+              src={logoUrl}
+              alt={businessName}
+              className="h-10 w-10 shrink-0 rounded-xl object-cover"
+              onError={() => setLogoError(true)}
+            />
           ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-lg font-bold text-white">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-lg font-bold text-white">
               {businessName.charAt(0).toUpperCase()}
             </div>
           )}
-          <div>
-            <h2 className="text-base font-bold text-sidebar-foreground">{businessName}</h2>
-            <p className="text-xs text-sidebar-muted">Inventory Management</p>
-          </div>
+          {(!collapsed || mobile) && (
+            <div className="min-w-0">
+              <h2 className="truncate text-base font-bold text-sidebar-foreground">{businessName}</h2>
+              <p className="text-xs text-sidebar-muted">Inventory Management</p>
+            </div>
+          )}
         </div>
-        <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
-          <p className="text-xs text-sidebar-muted">This month revenue</p>
-          <p className="mt-1 text-base font-semibold text-sidebar-foreground">
-            {formatCurrency(monthRevenue, currency)}
-          </p>
-        </div>
-        <Link href="/sales/new" onClick={() => setOpen(false)} className="mt-3 block">
-          <Button className="w-full justify-center">
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Record Sale
-          </Button>
-        </Link>
+        {(!collapsed || mobile) && (
+          <>
+            <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
+              <p className="text-xs text-sidebar-muted">This month revenue</p>
+              <p className="mt-1 text-base font-semibold text-sidebar-foreground">
+                {formatCurrency(monthRevenue, currency)}
+              </p>
+            </div>
+            <Link href="/sales/new" onClick={() => setOpen(false)} className="mt-3 block">
+              <Button className="w-full justify-center">
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Record Sale
+              </Button>
+            </Link>
+          </>
+        )}
+        {collapsed && !mobile && (
+          <Link href="/sales/new" onClick={() => setOpen(false)} className="mt-4 flex justify-center" title="Record Sale">
+            <Button size="sm" className="h-10 w-10 p-0">
+              <ShoppingCart className="h-4 w-4" />
+            </Button>
+          </Link>
+        )}
       </div>
-      <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
+      <nav className={cn("flex-1 space-y-0.5 overflow-y-auto p-3", collapsed && !mobile && "px-2")}>
         {mainNav.map((item) => {
           const Icon = item.icon;
           const active = isNavActive(pathname, item.href);
@@ -110,22 +133,34 @@ export function Sidebar({
               key={item.href}
               href={item.href}
               onClick={() => setOpen(false)}
+              title={collapsed && !mobile ? item.label : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                active ? "bg-primary text-primary-foreground shadow-sm" : "text-sidebar-muted hover:bg-white/5 hover:text-sidebar-foreground"
+                "flex items-center rounded-xl text-sm font-medium transition-colors",
+                collapsed && !mobile ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5",
+                active
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-sidebar-muted hover:bg-white/5 hover:text-sidebar-foreground"
               )}
             >
               <Icon className="h-5 w-5 shrink-0" />
-              {item.label}
+              {(!collapsed || mobile) && item.label}
             </Link>
           );
         })}
       </nav>
-      <div className="border-t border-white/10 p-3">
+      <div className={cn("border-t border-white/10 p-3", collapsed && !mobile && "px-2")}>
         <form action={logoutAction}>
-          <Button type="submit" variant="ghost" className="w-full justify-start text-sidebar-muted hover:bg-white/5 hover:text-sidebar-foreground">
-            <LogOut className="mr-3 h-5 w-5" />
-            Logout
+          <Button
+            type="submit"
+            variant="ghost"
+            title={collapsed && !mobile ? "Logout" : undefined}
+            className={cn(
+              "text-sidebar-muted hover:bg-white/5 hover:text-sidebar-foreground",
+              collapsed && !mobile ? "h-10 w-full justify-center px-0" : "w-full justify-start"
+            )}
+          >
+            <LogOut className={cn("h-5 w-5", !collapsed || mobile ? "mr-3" : "")} />
+            {(!collapsed || mobile) && "Logout"}
           </Button>
         </form>
       </div>
@@ -136,7 +171,7 @@ export function Sidebar({
     <>
       <header className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-card px-4 md:hidden">
         <div className="font-bold text-primary">{businessName}</div>
-        <button type="button" onClick={() => setOpen(!open)} className="rounded-lg p-2 hover:bg-slate-100">
+        <button type="button" onClick={() => setOpen(!open)} className="rounded-xl p-2 hover:bg-slate-100">
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </header>
@@ -145,7 +180,7 @@ export function Sidebar({
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
           <aside className="absolute left-0 top-0 flex h-full w-72 flex-col bg-sidebar">
-            <NavContent />
+            <NavContent mobile />
           </aside>
         </div>
       )}
@@ -155,7 +190,14 @@ export function Sidebar({
           const Icon = item.icon;
           const active = isNavActive(pathname, item.href);
           return (
-            <Link key={item.href} href={item.href} className={cn("flex flex-1 flex-col items-center py-2 text-[10px]", active ? "font-medium text-primary" : "text-muted")}>
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-1 flex-col items-center py-2 text-[10px]",
+                active ? "font-medium text-primary" : "text-muted"
+              )}
+            >
               <Icon className="h-5 w-5" />
               <span className="mt-0.5 truncate px-1">{item.label}</span>
             </Link>
@@ -164,7 +206,10 @@ export function Sidebar({
         <button
           type="button"
           onClick={() => setMoreOpen(!moreOpen)}
-          className={cn("flex flex-1 flex-col items-center py-2 text-[10px]", moreActive || moreOpen ? "font-medium text-primary" : "text-muted")}
+          className={cn(
+            "flex flex-1 flex-col items-center py-2 text-[10px]",
+            moreActive || moreOpen ? "font-medium text-primary" : "text-muted"
+          )}
         >
           <MoreHorizontal className="h-5 w-5" />
           <span className="mt-0.5">More</span>
@@ -174,7 +219,10 @@ export function Sidebar({
       {moreOpen && (
         <div className="fixed inset-0 z-50 md:hidden" onClick={() => setMoreOpen(false)}>
           <div className="absolute inset-0 bg-black/40" />
-          <div className="absolute bottom-16 left-4 right-4 rounded-xl border border-border bg-card p-2 shadow-lg" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="absolute bottom-16 left-4 right-4 rounded-2xl border border-border bg-card p-2 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
             {mobileMore.map((item) => {
               const Icon = item.icon;
               return (
@@ -182,14 +230,18 @@ export function Sidebar({
                   key={item.href}
                   href={item.href}
                   onClick={() => setMoreOpen(false)}
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium hover:bg-slate-50"
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-slate-50"
                 >
                   <Icon className="h-5 w-5 text-primary" />
                   {item.label}
                 </Link>
               );
             })}
-            <Link href="/sales/new" onClick={() => setMoreOpen(false)} className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-primary hover:bg-teal-50">
+            <Link
+              href="/sales/new"
+              onClick={() => setMoreOpen(false)}
+              className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-primary hover:bg-teal-50"
+            >
               <ShoppingCart className="h-5 w-5" />
               Record Sale
             </Link>
@@ -197,8 +249,20 @@ export function Sidebar({
         </div>
       )}
 
-      <aside className="hidden w-64 shrink-0 flex-col bg-sidebar md:fixed md:inset-y-0 md:flex">
+      <aside
+        className="group/sidebar fixed inset-y-0 left-0 z-30 hidden flex-col bg-sidebar transition-[width] duration-300 ease-in-out md:flex"
+        style={{ width }}
+      >
         <NavContent />
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="absolute -right-3 top-1/2 z-40 flex h-12 w-6 -translate-y-1/2 flex-col items-center justify-center gap-0.5 rounded-full border border-border bg-card text-muted shadow-md transition-colors hover:bg-slate-50 hover:text-foreground"
+        >
+          <GripVertical className="h-3 w-3 opacity-50" />
+          {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+        </button>
       </aside>
     </>
   );

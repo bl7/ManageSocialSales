@@ -19,7 +19,7 @@ export function PeriodFilters({ dateFrom, dateTo, basePath = "/purchases" }: Pro
   }
 
   return (
-    <div className="mb-6 space-y-3 rounded-xl border border-border bg-card p-4">
+    <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
         {SALES_DATE_PRESETS.map((p) => (
           <Button
@@ -39,11 +39,11 @@ export function PeriodFilters({ dateFrom, dateTo, basePath = "/purchases" }: Pro
       <form action={basePath} method="get" className="flex flex-wrap items-end gap-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">From</label>
-          <input name="dateFrom" type="date" defaultValue={dateFrom} className="h-10 rounded-lg border border-border px-3 text-sm" />
+          <input name="dateFrom" type="date" defaultValue={dateFrom} className="h-11 rounded-xl border border-border px-3 text-sm" />
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">To</label>
-          <input name="dateTo" type="date" defaultValue={dateTo} className="h-10 rounded-lg border border-border px-3 text-sm" />
+          <input name="dateTo" type="date" defaultValue={dateTo} className="h-11 rounded-xl border border-border px-3 text-sm" />
         </div>
         <Button type="submit">Apply</Button>
       </form>

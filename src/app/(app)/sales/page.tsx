@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getSalesSummary, getSalesList } from "@/lib/queries/sales";
 import { getSettings } from "@/lib/queries/dashboard";
 import { resolveListDateRange } from "@/lib/date-ranges";
-import { PageHeader, EmptyState } from "@/components/ui/page";
+import { PageHeader, EmptyState, ListPage, ListFilterBar } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { SalesFilters } from "@/components/sales/sales-filters";
 import { SalesSummaryCards } from "@/components/sales/sales-summary-cards";
@@ -30,12 +30,15 @@ export default async function SalesPage({ searchParams }: Props) {
   const currency = settings?.currency ?? "Rs.";
 
   return (
-    <div>
+    <ListPage>
       <PageHeader title="Sales" description="Revenue and profit by period">
         <Link href="/sales/new"><Button>Record Sale</Button></Link>
       </PageHeader>
 
-      <SalesFilters dateFrom={dateFrom} dateTo={dateTo} />
+      <ListFilterBar>
+        <SalesFilters dateFrom={dateFrom} dateTo={dateTo} />
+      </ListFilterBar>
+
       <SalesSummaryCards summary={summary} currency={currency} />
 
       {sales.length === 0 ? (
@@ -85,6 +88,6 @@ export default async function SalesPage({ searchParams }: Props) {
           </DataTableBody>
         </DataTable>
       )}
-    </div>
+    </ListPage>
   );
 }

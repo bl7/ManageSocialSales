@@ -1,4 +1,5 @@
 import { Card, CardTitle, CardValue } from "@/components/ui/card";
+import { SummaryGrid } from "@/components/ui/page";
 import { formatCurrency } from "@/lib/utils";
 import { ShoppingCart, Package, Banknote, TrendingUp } from "lucide-react";
 
@@ -27,7 +28,7 @@ export function SalesSummaryCards({ summary, currency }: Props) {
   ];
 
   return (
-    <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <SummaryGrid>
       {cards.map((card) => (
         <Card key={card.title} className={card.highlight ? "border-primary/30 bg-gradient-to-br from-teal-50/80 to-white" : ""}>
           <div className="flex items-start justify-between">
@@ -40,6 +41,6 @@ export function SalesSummaryCards({ summary, currency }: Props) {
           )}
         </Card>
       ))}
-    </div>
+    </SummaryGrid>
   );
 }

@@ -2,10 +2,10 @@ import Link from "next/link";
 import { getExpenses, getExpensesTotal, getExpenseCategories } from "@/lib/queries/expenses";
 import { getSettings } from "@/lib/queries/dashboard";
 import { resolveListDateRange } from "@/lib/date-ranges";
-import { PageHeader, EmptyState } from "@/components/ui/page";
+import { PageHeader, EmptyState, ListPage, ListFilterBar } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { PeriodFilters } from "@/components/ui/period-filters";
-import { Card, CardTitle, CardValue } from "@/components/ui/card";
+import { ExpensesSummaryCards } from "@/components/expenses/expenses-summary-cards";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ExpenseForm } from "@/components/forms/expense-form";
@@ -36,17 +36,16 @@ export default async function ExpensesPage({ searchParams }: Props) {
   }
 
   return (
-    <div>
+    <ListPage>
       <PageHeader title="Expenses" description="Business spending">
         <Link href="/expenses?new=1"><Button>Record Expense</Button></Link>
       </PageHeader>
 
-      <PeriodFilters dateFrom={dateFrom ?? ""} dateTo={dateTo ?? ""} basePath="/expenses" />
+      <ListFilterBar>
+        <PeriodFilters dateFrom={dateFrom ?? ""} dateTo={dateTo ?? ""} basePath="/expenses" />
+      </ListFilterBar>
 
-      <Card className="mb-6 max-w-xs">
-        <CardTitle>Total Expenses</CardTitle>
-        <CardValue>{formatCurrency(total, currency)}</CardValue>
-      </Card>
+      <ExpensesSummaryCards total={total} count={expenses.length} currency={currency} />
 
       {expenses.length === 0 ? (
         <EmptyState message="No expenses in this period." actionLabel="Record Expense" actionHref="/expenses?new=1" />
@@ -74,6 +73,6 @@ export default async function ExpensesPage({ searchParams }: Props) {
           </DataTableBody>
         </DataTable>
       )}
-    </div>
+    </ListPage>
   );
 }

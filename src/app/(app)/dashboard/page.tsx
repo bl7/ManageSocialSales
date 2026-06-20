@@ -43,7 +43,7 @@ export default async function DashboardPage() {
   const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader title={greeting} description="Here's what's happening in your business today." />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

@@ -12,7 +12,7 @@ const TABS = [
 
 export function PartiesTabs({ active }: { active: string }) {
   return (
-    <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl border border-border bg-card p-1">
+    <div className="flex gap-1 overflow-x-auto rounded-2xl border border-border bg-card p-1 shadow-sm">
       {TABS.map((tab) => (
         <Link
           key={tab.id}
