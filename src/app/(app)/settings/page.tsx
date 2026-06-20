@@ -8,8 +8,12 @@ export default async function SettingsPage() {
     <SettingsForm
       settings={{
         business_name: settings?.business_name ?? "Shree Inventory",
-        currency: settings?.currency ?? "$",
+        currency: settings?.currency ?? "Rs.",
         low_stock_default: settings?.low_stock_default ?? 5,
+        phone: settings?.phone,
+        address: settings?.address,
+        business_email: settings?.business_email,
+        logo_url: settings?.logo_url,
       }}
     />
   );

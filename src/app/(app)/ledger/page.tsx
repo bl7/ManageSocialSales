@@ -5,6 +5,7 @@ import { getSettings } from "@/lib/queries/dashboard";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { MovementBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ExportButton } from "@/components/export/export-button";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 
 interface Props {
@@ -29,7 +30,9 @@ export default async function LedgerPage({ searchParams }: Props) {
 
   return (
     <div>
-      <PageHeader title="Stock Ledger" description="Complete history of all stock movements" />
+      <PageHeader title="Stock Ledger" description="Complete history of all stock movements">
+        <ExportButton href={`/api/export/ledger?${new URLSearchParams(params as Record<string, string>).toString()}`} />
+      </PageHeader>
 
       <form className="mb-6 grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
         <select name="productId" defaultValue={params.productId || ""}

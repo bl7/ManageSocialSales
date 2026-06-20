@@ -1,47 +1,63 @@
 import Link from "next/link";
-import { getDashboardStats } from "@/lib/queries/dashboard";
-import { Card, CardTitle, CardValue } from "@/components/ui/card";
+import {
+  getDashboardStats,
+  getSettings,
+} from "@/lib/queries/dashboard";
+import {
+  getSalesChartData,
+  getPlatformChartData,
+  getRecentActivity,
+} from "@/lib/queries/dashboard-charts";
 import { PageHeader } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { StatCards } from "@/components/dashboard/stat-cards";
+import { SalesChart, PlatformChart } from "@/components/dashboard/dashboard-charts";
+import { RecentActivity } from "@/components/dashboard/recent-activity";
+import { Plus, ShoppingCart } from "lucide-react";
 
 export default async function DashboardPage() {
-  const stats = await getDashboardStats();
-  const c = stats.currency;
+  const [stats, salesChart, platformChart, activity, settings] = await Promise.all([
+    getDashboardStats(),
+    getSalesChartData(30),
+    getPlatformChartData(),
+    getRecentActivity(8),
+    getSettings(),
+  ]);
 
-  const cards = [
-    { title: "Total Products", value: stats.total_products },
-    { title: "Total Variants", value: stats.total_variants },
-    { title: "Total Stock Units", value: stats.total_stock_units },
-    { title: "Inventory Value", value: formatCurrency(stats.inventory_value, c) },
-    { title: "Low Stock Items", value: stats.low_stock_items, warn: stats.low_stock_items > 0 },
-    { title: "Out Of Stock", value: stats.out_of_stock_items, danger: stats.out_of_stock_items > 0 },
-    { title: "Sales This Month", value: stats.sales_this_month },
-    { title: "Units Sold This Month", value: stats.units_sold_this_month },
-    { title: "Revenue This Month", value: formatCurrency(stats.revenue_this_month, c) },
-    { title: "Est. Profit This Month", value: formatCurrency(stats.profit_this_month, c) },
-  ];
+  const currency = settings?.currency ?? "Rs.";
+
+  const salesData = salesChart.map((r) => ({
+    date: r.date,
+    revenue: Number(r.revenue),
+    units: Number(r.units),
+  }));
+
+  const platformData = platformChart.map((r) => ({
+    platform: r.platform,
+    revenue: Number(r.revenue),
+    count: Number(r.count),
+  }));
 
   return (
     <div>
-      <PageHeader title="Dashboard" description="Overview of your inventory and sales">
-        <Link href="/sales/new"><Button>Record Sale</Button></Link>
-        <Link href="/purchases/new"><Button variant="outline">Record Purchase</Button></Link>
-        <Link href="/products/new"><Button variant="outline">Add Product</Button></Link>
+      <PageHeader title="Dashboard" description="Your business at a glance">
+        <Link href="/sales/new">
+          <Button><ShoppingCart className="mr-2 h-4 w-4" />Record Sale</Button>
+        </Link>
+        <Link href="/products/new">
+          <Button variant="outline"><Plus className="mr-2 h-4 w-4" />Add Product</Button>
+        </Link>
       </PageHeader>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {cards.map((card) => (
-          <Card key={card.title}>
-            <CardTitle>{card.title}</CardTitle>
-            <CardValue className={
-              "warn" in card && card.warn ? "text-warning" :
-              "danger" in card && card.danger ? "text-danger" : ""
-            }>
-              {card.value}
-            </CardValue>
-          </Card>
-        ))}
+      <StatCards stats={{ ...stats, currency }} />
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <SalesChart data={salesData} currency={currency} />
+        <PlatformChart data={platformData} currency={currency} />
+      </div>
+
+      <div className="mt-6">
+        <RecentActivity entries={activity} />
       </div>
     </div>
   );

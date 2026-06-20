@@ -7,6 +7,10 @@ export async function getSettings() {
     business_name: string;
     currency: string;
     low_stock_default: number;
+    phone: string | null;
+    address: string | null;
+    business_email: string | null;
+    logo_url: string | null;
   }>(`SELECT * FROM ${T.settings} LIMIT 1`);
 }
 

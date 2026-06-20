@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { VariantPicker } from "@/components/ui/variant-picker";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
 
 interface Variant {
@@ -70,15 +71,13 @@ export function AdjustmentForm({ variants }: { variants: Variant[] }) {
 
           <FormGroup>
             <Label htmlFor="variant_id">Product / Variant *</Label>
-            <Select id="variant_id" name="variant_id" required value={variantId}
-              onChange={(e) => setVariantId(e.target.value)}>
-              <option value="">Select variant...</option>
-              {variants.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.product_name} — {v.size} / {v.color} (Stock: {v.current_stock})
-                </option>
-              ))}
-            </Select>
+            <VariantPicker
+              variants={variants}
+              value={variantId}
+              onChange={setVariantId}
+              showStock
+            />
+            <input type="hidden" name="variant_id" value={variantId} required />
             {variantId && (
               <p className="mt-2 text-sm font-medium">Current stock: {currentStock}</p>
             )}

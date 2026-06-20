@@ -10,14 +10,17 @@ export default function LoginPage() {
   const [state, action, pending] = useActionState(loginAction, null);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-primary">Shree Inventory</h1>
-          <p className="mt-2 text-sm text-muted">Sign in to manage your inventory</p>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-teal-50 via-background to-slate-100 px-4">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+        <div className="bg-primary px-8 py-6 text-center text-primary-foreground">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold">
+            S
+          </div>
+          <h1 className="text-2xl font-bold">Shree Inventory</h1>
+          <p className="mt-1 text-sm text-teal-100">Manage your business smarter</p>
         </div>
 
-        <form action={action} className="space-y-4">
+        <form action={action} className="space-y-4 p-8">
           {state && !state.success && <ErrorMessage message={state.error} />}
 
           <FormGroup>

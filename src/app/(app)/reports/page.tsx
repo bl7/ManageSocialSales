@@ -10,7 +10,7 @@ import {
 import { getSettings } from "@/lib/queries/dashboard";
 import { PageHeader } from "@/components/ui/page";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { ReportsFilters } from "@/components/reports/reports-filters";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 interface Props {
@@ -31,7 +31,7 @@ export default async function ReportsPage({ searchParams }: Props) {
       getSettings(),
     ]);
 
-  const currency = settings?.currency ?? "$";
+  const currency = settings?.currency ?? "Rs.";
   const totalValuation = valuation.reduce((s, r) => s + Number(r.total_value), 0);
   const totalProfit = profit.reduce((s, r) => s + Number(r.estimated_profit), 0);
 
@@ -61,13 +61,7 @@ export default async function ReportsPage({ searchParams }: Props) {
     <div>
       <PageHeader title="Reports" description="Business insights and inventory analysis" />
 
-      <form className="mb-6 flex flex-wrap gap-3 rounded-xl border border-border bg-card p-4">
-        <input name="dateFrom" type="date" defaultValue={params.dateFrom} placeholder="From"
-          className="h-10 rounded-lg border border-border px-3 text-sm" />
-        <input name="dateTo" type="date" defaultValue={params.dateTo} placeholder="To"
-          className="h-10 rounded-lg border border-border px-3 text-sm" />
-        <Button type="submit">Apply Date Range</Button>
-      </form>
+      <ReportsFilters dateFrom={params.dateFrom} dateTo={params.dateTo} />
 
       <div className="grid gap-6">
         <Card>

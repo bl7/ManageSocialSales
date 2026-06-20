@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { VariantPicker } from "@/components/ui/variant-picker";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
 
 interface Variant {
@@ -122,15 +123,12 @@ export function SaleForm({ variants }: { variants: Variant[] }) {
               <div key={i} className="mb-4 grid gap-3 rounded-lg border border-border p-4 sm:grid-cols-4">
                 <FormGroup className="sm:col-span-2">
                   <Label>Product / Variant *</Label>
-                  <Select value={item.variant_id} required
-                    onChange={(e) => updateItem(i, "variant_id", e.target.value)}>
-                    <option value="">Select variant...</option>
-                    {variants.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.product_name} — {v.size} / {v.color} (Stock: {v.current_stock})
-                      </option>
-                    ))}
-                  </Select>
+                  <VariantPicker
+                    variants={variants}
+                    value={item.variant_id}
+                    onChange={(id) => updateItem(i, "variant_id", id)}
+                    showStock
+                  />
                 </FormGroup>
                 <FormGroup>
                   <Label>Quantity *</Label>

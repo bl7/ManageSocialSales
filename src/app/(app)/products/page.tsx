@@ -8,6 +8,7 @@ import {
 import { getSettings } from "@/lib/queries/dashboard";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
+import { ExportButton } from "@/components/export/export-button";
 import { StockBadge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ export default async function ProductsPage({ searchParams }: Props) {
   return (
     <div>
       <PageHeader title="Products" description="All products and variants">
+        <ExportButton href="/api/export/products" />
         <Link href="/products/new"><Button>Add Product</Button></Link>
       </PageHeader>
 

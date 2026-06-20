@@ -65,6 +65,10 @@ export const settingsSchema = z.object({
   business_name: z.string().min(1, "Business name is required"),
   currency: z.string().min(1, "Currency is required"),
   low_stock_default: z.coerce.number().int().min(0),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  business_email: z.string().email("Invalid email").optional().or(z.literal("")),
+  logo_url: z.string().url("Invalid URL").optional().or(z.literal("")),
 });
 
 export function formatZodErrors(error: z.ZodError): string {

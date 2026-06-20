@@ -42,7 +42,7 @@ async function seed() {
   if (existingSettings.rows.length === 0) {
     await pool.query(
       `INSERT INTO ${T.settings} (id, business_name, currency, low_stock_default) VALUES ($1, $2, $3, $4)`,
-      [uuidv4(), "Shree Inventory", "$", 5]
+      [uuidv4(), "Shree Inventory", "Rs.", 5]
     );
     console.log("Default settings created.");
   }

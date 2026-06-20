@@ -105,7 +105,7 @@ export async function saveProductAction(
       return pid!;
     });
 
-    redirect(`/products/${id}`);
+    redirect(`/products/${id}?toast=product-saved`);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to save product";
     if (message.includes("unique") || message.includes("duplicate")) {
