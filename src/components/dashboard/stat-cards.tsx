@@ -2,13 +2,8 @@ import Link from "next/link";
 import { Card, CardTitle, CardValue } from "@/components/ui/card";
 import { cn, formatCurrency } from "@/lib/utils";
 import {
-  Package,
-  Layers,
-  Boxes,
   DollarSign,
   AlertTriangle,
-  XCircle,
-  ShoppingCart,
   TrendingUp,
   Banknote,
   Wallet,
@@ -45,35 +40,16 @@ export function StatCards({ stats }: StatCardsProps) {
     danger?: boolean;
     highlight?: boolean;
   }[] = [
-    { title: "Products", value: stats.total_products, icon: <Package className="h-5 w-5" />, href: "/products" },
-    { title: "Variants", value: stats.total_variants, icon: <Layers className="h-5 w-5" />, href: "/products" },
-    { title: "Stock Units", value: stats.total_stock_units, icon: <Boxes className="h-5 w-5" /> },
     { title: "Inventory Value", value: formatCurrency(stats.inventory_value, c), icon: <DollarSign className="h-5 w-5" /> },
     {
-      title: "Low Stock",
-      value: stats.low_stock_items,
-      icon: <AlertTriangle className="h-5 w-5" />,
-      href: "/products?stockStatus=low_stock",
-      warn: stats.low_stock_items > 0,
-    },
-    {
-      title: "Out of Stock",
-      value: stats.out_of_stock_items,
-      icon: <XCircle className="h-5 w-5" />,
-      href: "/products?stockStatus=out_of_stock",
-      danger: stats.out_of_stock_items > 0,
-    },
-    { title: "Sales This Month", value: stats.sales_this_month, icon: <ShoppingCart className="h-5 w-5" />, href: "/reports" },
-    { title: "Units Sold", value: stats.units_sold_this_month, icon: <TrendingUp className="h-5 w-5" /> },
-    {
-      title: "Revenue",
+      title: "Revenue This Month",
       value: formatCurrency(stats.revenue_this_month, c),
       icon: <Banknote className="h-5 w-5" />,
       href: "/reports",
       highlight: true,
     },
     {
-      title: "Est. Profit",
+      title: "Profit This Month",
       value: formatCurrency(stats.profit_this_month, c),
       subtitle: "Based on default cost prices",
       icon: <TrendingUp className="h-5 w-5" />,
@@ -81,25 +57,31 @@ export function StatCards({ stats }: StatCardsProps) {
       highlight: true,
     },
     {
-      title: "Receivables",
+      title: "Money Owed To You",
       value: formatCurrency(stats.total_receivables, c),
-      subtitle: "Customer udhar",
       icon: <Wallet className="h-5 w-5" />,
       href: "/parties?tab=to-collect",
       warn: stats.total_receivables > 0,
     },
     {
-      title: "Payables",
+      title: "Money You Owe",
       value: formatCurrency(stats.total_payables, c),
-      subtitle: "Supplier credit",
       icon: <Wallet className="h-5 w-5" />,
-      href: "/parties?tab=to-collect",
+      href: "/parties?tab=to-pay",
       warn: stats.total_payables > 0,
+    },
+    {
+      title: "Low Stock Items",
+      value: stats.low_stock_items + stats.out_of_stock_items,
+      subtitle: `${stats.out_of_stock_items} out of stock`,
+      icon: <AlertTriangle className="h-5 w-5" />,
+      href: "/products?stockStatus=low_stock",
+      warn: stats.low_stock_items + stats.out_of_stock_items > 0,
     },
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {cards.map((card) => {
         const inner = (
           <Card

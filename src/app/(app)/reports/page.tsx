@@ -7,6 +7,7 @@ import {
   getRevenueReport,
   getProfitReport,
 } from "@/lib/queries/reports";
+import Link from "next/link";
 import { getSettings } from "@/lib/queries/dashboard";
 import { PageHeader } from "@/components/ui/page";
 import { Card } from "@/components/ui/card";
@@ -15,11 +16,12 @@ import { resolveListDateRange } from "@/lib/date-ranges";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 interface Props {
-  searchParams: Promise<{ dateFrom?: string; dateTo?: string; preset?: string }>;
+  searchParams: Promise<{ dateFrom?: string; dateTo?: string; preset?: string; tab?: string }>;
 }
 
 export default async function ReportsPage({ searchParams }: Props) {
   const params = await searchParams;
+  const tab = ["sales", "profit", "inventory", "credit"].includes(params.tab || "") ? (params.tab as string) : "sales";
   const { from: dateFrom, to: dateTo } = resolveListDateRange(params);
   const [bestSelling, slowMoving, lowStock, outOfStock, valuation, revenue, profit, settings] =
     await Promise.all([
@@ -65,8 +67,25 @@ export default async function ReportsPage({ searchParams }: Props) {
       <PageHeader title="Reports" description="Business insights and inventory analysis" />
 
       <ReportsFilters dateFrom={dateFrom} dateTo={dateTo} />
+      <div className="mb-6 flex gap-2 overflow-x-auto rounded-xl border border-border bg-card p-1">
+        {[
+          { id: "sales", label: "Sales" },
+          { id: "profit", label: "Profit" },
+          { id: "inventory", label: "Inventory" },
+          { id: "credit", label: "Credit" },
+        ].map((t) => (
+          <Link
+            key={t.id}
+            href={`/reports?tab=${t.id}${dateFrom ? `&dateFrom=${dateFrom}` : ""}${dateTo ? `&dateTo=${dateTo}` : ""}`}
+            className={`shrink-0 rounded-lg px-3 py-2 text-sm font-medium ${tab === t.id ? "bg-primary text-primary-foreground" : "text-muted hover:bg-slate-50"}`}
+          >
+            {t.label}
+          </Link>
+        ))}
+      </div>
 
       <div className="grid gap-6">
+        {tab === "sales" && (
         <div className="grid gap-6 md:grid-cols-2">
           <Card className={hasDateFilter ? "border-primary/30" : ""}>
             <h3 className="mb-1 font-semibold">Revenue Report</h3>
@@ -100,8 +119,9 @@ export default async function ReportsPage({ searchParams }: Props) {
             />
           </Card>
         </div>
+        )}
 
-        <Card>
+        {tab === "sales" && <Card>
           <h3 className="mb-4 font-semibold">Best Selling Products</h3>
           <ReportTable
             headers={["Product", "Size", "Color", "Sold", "Revenue"]}
@@ -110,9 +130,9 @@ export default async function ReportsPage({ searchParams }: Props) {
               formatCurrency(r.total_revenue, currency),
             ])}
           />
-        </Card>
+        </Card>}
 
-        <Card>
+        {tab === "sales" && <Card>
           <h3 className="mb-4 font-semibold">Slow Moving Products</h3>
           <ReportTable
             headers={["Product", "Size", "Color", "Sold", "Stock"]}
@@ -120,9 +140,9 @@ export default async function ReportsPage({ searchParams }: Props) {
               r.product_name, r.size, r.color, r.total_sold, r.current_stock,
             ])}
           />
-        </Card>
+        </Card>}
 
-        <div className="grid gap-6 md:grid-cols-2">
+        {tab === "inventory" && <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <h3 className="mb-4 font-semibold">Low Stock ({lowStock.length})</h3>
             <ReportTable
@@ -142,9 +162,9 @@ export default async function ReportsPage({ searchParams }: Props) {
               ])}
             />
           </Card>
-        </div>
+        </div>}
 
-        <Card>
+        {tab === "inventory" && <Card>
           <h3 className="mb-1 font-semibold">Inventory Valuation</h3>
           <p className="mb-4 text-2xl font-bold">{formatCurrency(totalValuation, currency)}</p>
           <ReportTable
@@ -155,7 +175,34 @@ export default async function ReportsPage({ searchParams }: Props) {
               formatCurrency(r.total_value, currency),
             ])}
           />
-        </Card>
+        </Card>}
+
+        {tab === "profit" && (
+          <Card>
+            <h3 className="mb-1 font-semibold">Estimated Profit Report</h3>
+            <p className="mb-1 text-2xl font-bold text-primary">{formatCurrency(totalProfit, currency)}</p>
+            <p className="mb-4 text-xs text-muted">Based on default cost prices</p>
+            <ReportTable
+              headers={["Date", "Product", "Qty", "Revenue", "Est. Cost", "Est. Profit"]}
+              rows={profit.map((r) => [
+                formatDate(r.sale_date), `${r.product_name} ${r.size}/${r.color}`,
+                r.quantity, formatCurrency(r.revenue, currency),
+                formatCurrency(r.estimated_cost, currency),
+                formatCurrency(r.estimated_profit, currency),
+              ])}
+            />
+          </Card>
+        )}
+
+        {tab === "credit" && (
+          <Card>
+            <h3 className="mb-1 font-semibold">Credit Snapshot</h3>
+            <p className="mb-4 text-sm text-muted">View full credit analytics and collections in Parties.</p>
+            <Link href="/parties?tab=to-collect" className="text-sm font-medium text-primary hover:underline">
+              Go to Parties Credit View
+            </Link>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -359,6 +359,26 @@ export function SaleForm({
         </fieldset>
       </form>
 
+      <div className="fixed inset-x-0 bottom-12 z-30 border-t border-border bg-card/95 p-3 backdrop-blur md:hidden">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+          <div>
+            <p className="text-xs text-muted">Grand Total</p>
+            <p className="text-xl font-bold">{formatCurrency(total, currency)}</p>
+          </div>
+          <Button
+            type="button"
+            disabled={pending}
+            onClick={() => {
+              if (!validate()) return;
+              setConfirmOpen(true);
+            }}
+            className="px-6"
+          >
+            Save Sale
+          </Button>
+        </div>
+      </div>
+
       <ConfirmDialog
         open={confirmOpen}
         title="Confirm sale"

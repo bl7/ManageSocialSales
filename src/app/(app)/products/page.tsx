@@ -20,6 +20,7 @@ interface Props {
     size?: string;
     color?: string;
     stockStatus?: string;
+    view?: string;
   }>;
 }
 
@@ -33,10 +34,14 @@ export default async function ProductsPage({ searchParams }: Props) {
     getSettings(),
   ]);
   const currency = settings?.currency ?? "Rs.";
+  const view = params.view === "card" ? "card" : "table";
 
   return (
     <div>
       <PageHeader title="Products" description="All products and variants">
+        <Link href={view === "table" ? "/products?view=card" : "/products"}>
+          <Button variant="outline">{view === "table" ? "Card View" : "Table View"}</Button>
+        </Link>
         <ExportButton href="/api/export/products" />
         <Link href="/products/new"><Button>Add Product</Button></Link>
       </PageHeader>
@@ -76,6 +81,35 @@ export default async function ProductsPage({ searchParams }: Props) {
           actionHref="/products/new"
         />
       ) : (
+        <>
+        {view === "card" ? (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {products.map((p) => (
+              <div key={p.id} className="rounded-2xl border border-border bg-card p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <Link href={`/products/${p.product_id}`} className="font-semibold text-primary hover:underline">
+                      {p.product_name}
+                    </Link>
+                    <p className="mt-1 text-xs text-muted">{p.category || "Uncategorized"} · SKU: {p.sku || "—"}</p>
+                  </div>
+                  <StockBadge status={p.stock_status} />
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div><p className="text-xs text-muted">Variant</p><p>{p.color} / {p.size}</p></div>
+                  <div><p className="text-xs text-muted">Stock</p><p className="font-medium">{p.current_stock}</p></div>
+                  <div><p className="text-xs text-muted">Cost</p><p>{formatCurrency(p.default_cost_price, currency)}</p></div>
+                  <div><p className="text-xs text-muted">Price</p><p>{formatCurrency(p.default_selling_price, currency)}</p></div>
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <Link href={`/sales/new?product=${p.product_id}`}><Button size="sm">Sale</Button></Link>
+                  <Link href={`/purchases/new?product=${p.product_id}`}><Button size="sm" variant="outline">Purchase</Button></Link>
+                  <Link href={`/products/${p.product_id}`}><Button size="sm" variant="ghost">View</Button></Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
         <DataTable>
           <DataTableHead>
             <tr>
@@ -114,6 +148,8 @@ export default async function ProductsPage({ searchParams }: Props) {
             ))}
           </DataTableBody>
         </DataTable>
+        )}
+        </>
       )}
     </div>
   );

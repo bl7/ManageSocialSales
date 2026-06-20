@@ -68,13 +68,23 @@ export default async function PurchasesPage({ searchParams }: Props) {
           </DataTableHead>
           <DataTableBody>
             {purchases.map((p: Record<string, unknown>) => (
-              <tr key={p.id as string} className="hover:bg-slate-50">
-                <td className="px-4 py-3">{formatDate(p.purchase_date as string)}</td>
+              <tr
+                key={p.id as string}
+                className={`hover:bg-slate-50 ${p.status === "voided" ? "opacity-60" : ""}`}
+              >
+                <td className="px-4 py-3">
+                  {formatDate(p.purchase_date as string)}
+                  {p.status === "voided" && (
+                    <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700">voided</span>
+                  )}
+                </td>
                 <td className="px-4 py-3">{(p.party_name as string) || (p.supplier as string) || "—"}</td>
                 <td className="px-4 py-3">{p.item_count as number}</td>
                 <td className="px-4 py-3">{formatCurrency(p.total_amount as string, currency)}</td>
                 <td className="px-4 py-3">{formatCurrency(p.amount_paid as string, currency)}</td>
-                <td className="px-4 py-3 capitalize">{p.payment_status as string}</td>
+                <td className="px-4 py-3 capitalize">
+                  {p.status === "voided" ? "voided" : (p.payment_status as string)}
+                </td>
                 <td className="px-4 py-3">
                   <Link href={`/purchases/${p.id as string}`} className="text-sm text-primary hover:underline">View</Link>
                 </td>

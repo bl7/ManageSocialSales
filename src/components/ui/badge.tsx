@@ -23,11 +23,11 @@ export function StockBadge({ status }: { status: StockStatus }) {
 
 export function MovementBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {
-    purchase: "bg-blue-100 text-blue-800",
-    sale: "bg-purple-100 text-purple-800",
-    adjustment: "bg-orange-100 text-orange-800",
-    sale_void: "bg-red-100 text-red-800",
-    purchase_void: "bg-red-100 text-red-800",
+    purchase: "bg-emerald-100 text-emerald-800",
+    sale: "bg-rose-100 text-rose-800",
+    adjustment: "bg-amber-100 text-amber-800",
+    sale_void: "bg-slate-200 text-slate-700",
+    purchase_void: "bg-slate-200 text-slate-700",
   };
   return (
     <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize", colors[type] || "bg-slate-100")}>

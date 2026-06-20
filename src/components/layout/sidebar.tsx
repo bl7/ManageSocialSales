@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { cn, formatCurrency } from "@/lib/utils";
 import { logoutAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +31,7 @@ const mainNav = [
   { href: "/purchases", label: "Purchases", icon: PackagePlus },
   { href: "/parties", label: "Parties", icon: Users },
   { href: "/expenses", label: "Expenses", icon: Wallet },
-  { href: "/ledger", label: "Stock Ledger", icon: ScrollText },
+  { href: "/ledger", label: "Stock History", icon: ScrollText },
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/investment", label: "Investment", icon: PiggyBank },
   { href: "/settings", label: "Settings", icon: Settings },
@@ -49,11 +49,26 @@ function isNavActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function Sidebar({ businessName, logoUrl }: { businessName: string; logoUrl?: string | null }) {
+export function Sidebar({
+  businessName,
+  logoUrl,
+  monthRevenue = 0,
+  currency = "Rs.",
+}: {
+  businessName: string;
+  logoUrl?: string | null;
+  monthRevenue?: number;
+  currency?: string;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [logoError, setLogoError] = useState(false);
+
+  useEffect(() => {
+    setMoreOpen(false);
+    setOpen(false);
+  }, [pathname]);
 
   const moreActive = mobileMore.some((item) => isNavActive(pathname, item.href));
 
@@ -73,6 +88,18 @@ export function Sidebar({ businessName, logoUrl }: { businessName: string; logoU
             <p className="text-xs text-sidebar-muted">Inventory Management</p>
           </div>
         </div>
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
+          <p className="text-xs text-sidebar-muted">This month revenue</p>
+          <p className="mt-1 text-base font-semibold text-sidebar-foreground">
+            {formatCurrency(monthRevenue, currency)}
+          </p>
+        </div>
+        <Link href="/sales/new" onClick={() => setOpen(false)} className="mt-3 block">
+          <Button className="w-full justify-center">
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            Record Sale
+          </Button>
+        </Link>
       </div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
         {mainNav.map((item) => {

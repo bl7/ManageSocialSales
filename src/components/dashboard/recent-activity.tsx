@@ -17,16 +17,18 @@ export function RecentActivity({ entries }: { entries: LedgerEntry[] }) {
       {entries.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted">No stock movements yet</p>
       ) : (
-        <ul className="divide-y divide-border">
+        <ul className="space-y-4">
           {entries.map((e) => (
-            <li key={e.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+            <li key={e.id} className="relative flex gap-3 rounded-xl border border-border/70 bg-slate-50/50 p-3">
+              <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{e.product_name}</p>
+                <p className="text-xs text-muted">{formatDateTime(e.created_at)}</p>
+                <p className="mt-1 truncate text-sm font-medium">{e.product_name}</p>
                 <p className="text-xs text-muted">
-                  {e.size} / {e.color} · {formatDateTime(e.created_at)}
+                  {e.size} / {e.color}
                 </p>
               </div>
-              <div className="ml-3 flex items-center gap-2">
+              <div className="ml-2 flex items-center gap-2">
                 <MovementBadge type={e.movement_type} />
                 <span className={`text-sm font-semibold ${e.quantity_change > 0 ? "text-success" : "text-danger"}`}>
                   {e.quantity_change > 0 ? "+" : ""}{e.quantity_change}

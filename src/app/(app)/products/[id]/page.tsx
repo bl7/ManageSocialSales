@@ -54,37 +54,27 @@ export default async function ProductDetailPage({ params }: Props) {
         </Card>
       </div>
 
-      <h3 className="mb-3 text-lg font-semibold">Variants</h3>
+      <h3 className="mb-3 text-xl font-semibold">Variants</h3>
       {variants.length === 0 ? (
         <EmptyState message="No variants yet." />
       ) : (
-        <div className="mb-8 overflow-x-auto rounded-xl border border-border bg-card">
-          <table className="w-full text-sm">
-            <thead className="border-b border-border bg-slate-50 text-left text-xs uppercase text-muted">
-              <tr>
-                <th className="px-4 py-3">Size</th>
-                <th className="px-4 py-3">Color</th>
-                <th className="px-4 py-3">Cost</th>
-                <th className="px-4 py-3">Price</th>
-                <th className="px-4 py-3">Stock</th>
-                <th className="px-4 py-3">Reorder</th>
-                <th className="px-4 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {variants.map((v) => (
-                <tr key={v.id}>
-                  <td className="px-4 py-3">{v.size}</td>
-                  <td className="px-4 py-3">{v.color}</td>
-                  <td className="px-4 py-3">{formatCurrency(v.default_cost_price, currency)}</td>
-                  <td className="px-4 py-3">{formatCurrency(v.default_selling_price, currency)}</td>
-                  <td className="px-4 py-3 font-medium">{v.current_stock}</td>
-                  <td className="px-4 py-3">{v.reorder_level}</td>
-                  <td className="px-4 py-3"><StockBadge status={v.stock_status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {variants.map((v) => (
+            <Card key={v.id}>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-semibold">{v.color} / {v.size}</p>
+                  <p className="text-xs text-muted">Reorder at {v.reorder_level}</p>
+                </div>
+                <StockBadge status={v.stock_status} />
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div><p className="text-xs text-muted">Stock</p><p className="font-medium">{v.current_stock}</p></div>
+                <div><p className="text-xs text-muted">Cost</p><p>{formatCurrency(v.default_cost_price, currency)}</p></div>
+                <div><p className="text-xs text-muted">Selling</p><p>{formatCurrency(v.default_selling_price, currency)}</p></div>
+              </div>
+            </Card>
+          ))}
         </div>
       )}
 

@@ -8,7 +8,7 @@ export function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("rounded-xl border border-border bg-card p-5 shadow-sm", className)}>
+    <div className={cn("rounded-2xl border border-border bg-card p-6 shadow-sm", className)}>
       {children}
     </div>
   );
@@ -19,5 +19,5 @@ export function CardTitle({ children, className }: { children: React.ReactNode; 
 }
 
 export function CardValue({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <p className={cn("mt-1 text-2xl font-bold", className)}>{children}</p>;
+  return <p className={cn("mt-2 text-3xl font-bold", className)}>{children}</p>;
 }

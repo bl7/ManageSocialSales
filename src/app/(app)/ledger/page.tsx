@@ -37,7 +37,7 @@ export default async function LedgerPage({ searchParams }: Props) {
 
   return (
     <div>
-      <PageHeader title="Stock Ledger" description="Complete history of all stock movements — why stock is what it is">
+      <PageHeader title="Stock History" description="Complete stock movement history — why stock is what it is">
         <Link href="/stock-corrections/new"><Button>Stock Correction</Button></Link>
         <ExportButton href={`/api/export/ledger?${new URLSearchParams(params as Record<string, string>).toString()}`} />
       </PageHeader>
@@ -76,7 +76,10 @@ export default async function LedgerPage({ searchParams }: Props) {
           </DataTableHead>
           <DataTableBody>
             {entries.map((e) => (
-              <tr key={e.id} className="hover:bg-slate-50">
+              <tr
+                key={e.id}
+                className={`hover:bg-slate-50 ${["sale_void", "purchase_void"].includes(e.movement_type) ? "bg-red-50/30" : ""}`}
+              >
                 <td className="px-4 py-3 whitespace-nowrap">{formatDateTime(e.created_at)}</td>
                 <td className="px-4 py-3">{e.product_name}</td>
                 <td className="px-4 py-3">{e.size}</td>
@@ -88,7 +91,12 @@ export default async function LedgerPage({ searchParams }: Props) {
                 <td className="px-4 py-3 font-medium">{e.stock_after}</td>
                 <td className="px-4 py-3">{e.unit_cost ? formatCurrency(e.unit_cost, currency) : "—"}</td>
                 <td className="px-4 py-3">{e.unit_sale_price ? formatCurrency(e.unit_sale_price, currency) : "—"}</td>
-                <td className="px-4 py-3 text-muted">{e.notes || "—"}</td>
+                <td className="px-4 py-3 text-muted">
+                  {["sale_void", "purchase_void"].includes(e.movement_type) && (
+                    <span className="mr-1 font-medium text-danger">Void reversal:</span>
+                  )}
+                  {e.notes || "—"}
+                </td>
               </tr>
             ))}
           </DataTableBody>
