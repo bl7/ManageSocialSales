@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { recordAdjustmentAction } from "@/actions/inventory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,8 +49,18 @@ export function AdjustmentForm({ variants }: { variants: Variant[] }) {
       return;
     }
 
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const result = await recordAdjustmentAction(null, formData);
+    if (result?.success) {
+      toast.success("Stock adjustment recorded");
+      form.reset();
+      setVariantId("");
+      setQuantityChange(0);
+      setPending(false);
+      router.refresh();
+      return;
+    }
     if (result && !result.success) {
       setError(result.error);
       setPending(false);

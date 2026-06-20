@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { recordPurchaseAction } from "@/actions/inventory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,10 +52,19 @@ export function PurchaseForm({ variants }: { variants: Variant[] }) {
     setPending(true);
     setError("");
 
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     formData.set("items", JSON.stringify(items));
 
     const result = await recordPurchaseAction(null, formData);
+    if (result?.success) {
+      toast.success("Purchase recorded successfully");
+      form.reset();
+      setItems([{ variant_id: "", quantity: 1, unit_cost: 0 }]);
+      setPending(false);
+      router.refresh();
+      return;
+    }
     if (result && !result.success) {
       setError(result.error);
       setPending(false);

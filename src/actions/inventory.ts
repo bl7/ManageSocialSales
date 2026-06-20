@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { requireUser } from "@/actions/auth";
 import {
   purchaseSchema,
@@ -50,7 +49,7 @@ export async function recordPurchaseAction(
         unit_cost: i.unit_cost,
       }))
     );
-    redirect("/ledger?toast=purchase-recorded");
+    return { success: true };
   } catch {
     return { success: false, error: "Failed to record purchase. Please try again." };
   }
@@ -91,7 +90,7 @@ export async function recordSaleAction(
         unit_sale_price: i.unit_sale_price,
       }))
     );
-    redirect("/ledger?toast=sale-recorded");
+    return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "";
     if (message.includes("Insufficient stock")) {
@@ -127,7 +126,7 @@ export async function recordAdjustmentAction(
       parsed.data.reason,
       parsed.data.notes
     );
-    redirect("/ledger?toast=adjustment-recorded");
+    return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "";
     if (message.includes("negative stock")) {

@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { withTransaction } from "@/lib/db";
 import { T } from "@/lib/tables";
@@ -105,7 +104,7 @@ export async function saveProductAction(
       return pid!;
     });
 
-    redirect(`/products/${id}?toast=product-saved`);
+    return { success: true, id: id! };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to save product";
     if (message.includes("unique") || message.includes("duplicate")) {

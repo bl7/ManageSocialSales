@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { saveProductAction } from "@/actions/products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +58,11 @@ export function ProductForm({ product, variants: initialVariants }: ProductFormP
     if (product?.id) formData.set("product_id", product.id);
 
     const result = await saveProductAction(null, formData);
+    if (result && "id" in result && result.success) {
+      toast.success("Product saved successfully");
+      router.push(`/products/${result.id}?toast=product-saved`);
+      return;
+    }
     if (result && !result.success) {
       setError(result.error);
       setPending(false);
