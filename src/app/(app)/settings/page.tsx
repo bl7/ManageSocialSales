@@ -14,6 +14,7 @@ export default async function SettingsPage() {
         address: settings?.address,
         business_email: settings?.business_email,
         logo_url: settings?.logo_url,
+        invoice_prefix: settings?.invoice_prefix,
       }}
     />
   );

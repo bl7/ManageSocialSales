@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getProductById, getProductVariants } from "@/lib/queries/products";
+import { getProductCategories } from "@/lib/queries/categories";
 import { ProductForm } from "@/components/forms/product-form";
 
 interface Props {
@@ -8,9 +9,10 @@ interface Props {
 
 export default async function EditProductPage({ params }: Props) {
   const { id } = await params;
-  const [product, variants] = await Promise.all([
+  const [product, variants, categories] = await Promise.all([
     getProductById(id),
     getProductVariants(id, false),
+    getProductCategories(),
   ]);
 
   if (!product) notFound();
@@ -23,7 +25,7 @@ export default async function EditProductPage({ params }: Props) {
         id: p.id as string,
         name: p.name as string,
         sku: p.sku as string | null,
-        category: p.category as string | null,
+        category_id: p.category_id as string | null,
         brand: p.brand as string | null,
         supplier: p.supplier as string | null,
         description: p.description as string | null,
@@ -36,6 +38,7 @@ export default async function EditProductPage({ params }: Props) {
         default_selling_price: parseFloat(v.default_selling_price),
         reorder_level: v.reorder_level,
       }))}
+      categories={categories.map((c) => ({ id: c.id, label: c.name }))}
     />
   );
 }

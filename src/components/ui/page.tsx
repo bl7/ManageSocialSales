@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export function PageHeader({
@@ -20,10 +21,25 @@ export function PageHeader({
   );
 }
 
-export function EmptyState({ message }: { message: string }) {
+export function EmptyState({
+  message,
+  actionLabel,
+  actionHref,
+}: {
+  message: string;
+  actionLabel?: string;
+  actionHref?: string;
+}) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-16 text-center">
-      <p className="text-muted">{message}</p>
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card py-16 text-center px-6">
+      <p className="max-w-sm text-muted">{message}</p>
+      {actionLabel && actionHref && (
+        <Link href={actionHref} className="mt-4">
+          <span className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary-dark">
+            {actionLabel}
+          </span>
+        </Link>
+      )}
     </div>
   );
 }

@@ -26,7 +26,7 @@ export async function saveProductAction(
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
     sku: formData.get("sku") || undefined,
-    category: formData.get("category") || undefined,
+    category_id: formData.get("category_id") || undefined,
     brand: formData.get("brand") || undefined,
     supplier: formData.get("supplier") || undefined,
     description: formData.get("description") || undefined,
@@ -43,12 +43,12 @@ export async function saveProductAction(
 
       if (pid) {
         await client.query(
-          `UPDATE ${T.products} SET name=$1, sku=$2, category=$3, brand=$4,
+          `UPDATE ${T.products} SET name=$1, sku=$2, category_id=$3, brand=$4,
            supplier=$5, description=$6, updated_at=NOW() WHERE id=$7`,
           [
             parsed.data.name,
             parsed.data.sku || null,
-            parsed.data.category || null,
+            parsed.data.category_id || null,
             parsed.data.brand || null,
             parsed.data.supplier || null,
             parsed.data.description || null,
@@ -58,13 +58,13 @@ export async function saveProductAction(
       } else {
         pid = uuidv4();
         await client.query(
-          `INSERT INTO ${T.products} (id, name, sku, category, brand, supplier, description)
+          `INSERT INTO ${T.products} (id, name, sku, category_id, brand, supplier, description)
            VALUES ($1, $2, $3, $4, $5, $6, $7)`,
           [
             pid,
             parsed.data.name,
             parsed.data.sku || null,
-            parsed.data.category || null,
+            parsed.data.category_id || null,
             parsed.data.brand || null,
             parsed.data.supplier || null,
             parsed.data.description || null,

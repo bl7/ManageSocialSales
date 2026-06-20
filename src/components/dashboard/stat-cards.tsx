@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   TrendingUp,
   Banknote,
+  Wallet,
 } from "lucide-react";
 
 interface StatCardsProps {
@@ -25,6 +26,8 @@ interface StatCardsProps {
     units_sold_this_month: number;
     revenue_this_month: number;
     profit_this_month: number;
+    total_receivables: number;
+    total_payables: number;
     currency: string;
   };
 }
@@ -35,6 +38,7 @@ export function StatCards({ stats }: StatCardsProps) {
   const cards: {
     title: string;
     value: string | number;
+    subtitle?: string;
     icon: React.ReactNode;
     href?: string;
     warn?: boolean;
@@ -71,9 +75,26 @@ export function StatCards({ stats }: StatCardsProps) {
     {
       title: "Est. Profit",
       value: formatCurrency(stats.profit_this_month, c),
+      subtitle: "Based on default cost prices",
       icon: <TrendingUp className="h-5 w-5" />,
       href: "/reports",
       highlight: true,
+    },
+    {
+      title: "Receivables",
+      value: formatCurrency(stats.total_receivables, c),
+      subtitle: "Customer udhar",
+      icon: <Wallet className="h-5 w-5" />,
+      href: "/credit",
+      warn: stats.total_receivables > 0,
+    },
+    {
+      title: "Payables",
+      value: formatCurrency(stats.total_payables, c),
+      subtitle: "Supplier credit",
+      icon: <Wallet className="h-5 w-5" />,
+      href: "/credit",
+      warn: stats.total_payables > 0,
     },
   ];
 
@@ -101,6 +122,9 @@ export function StatCards({ stats }: StatCardsProps) {
             >
               {card.value}
             </CardValue>
+            {card.subtitle && (
+              <p className="mt-1 text-xs text-muted">{card.subtitle}</p>
+            )}
           </Card>
         );
         return card.href ? (

@@ -11,9 +11,16 @@ import {
   Shirt,
   PackagePlus,
   ShoppingCart,
+  Receipt,
+  Users,
+  Wallet,
+  HandCoins,
+  PiggyBank,
   Scale,
   ScrollText,
   BarChart3,
+  Tags,
+  CreditCard,
   Settings,
   LogOut,
   Menu,
@@ -23,8 +30,15 @@ import {
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/products", label: "Products", icon: Shirt },
-  { href: "/purchases/new", label: "Record Purchase", icon: PackagePlus },
+  { href: "/categories", label: "Categories", icon: Tags },
+  { href: "/sales", label: "Sales", icon: Receipt },
+  { href: "/payment-methods", label: "Payment Methods", icon: CreditCard },
+  { href: "/parties", label: "Parties", icon: Users },
+  { href: "/credit", label: "Credit Summary", icon: HandCoins },
+  { href: "/investment", label: "Investment", icon: PiggyBank },
+  { href: "/purchases", label: "Purchases", icon: PackagePlus },
   { href: "/sales/new", label: "Record Sale", icon: ShoppingCart },
+  { href: "/expenses", label: "Expenses", icon: Wallet },
   { href: "/adjustments/new", label: "Adjustment", icon: Scale },
   { href: "/ledger", label: "Stock Ledger", icon: ScrollText },
   { href: "/reports", label: "Reports", icon: BarChart3 },
@@ -33,21 +47,33 @@ const navItems = [
 
 function isNavActive(pathname: string, href: string) {
   if (href === "/dashboard") return pathname === "/dashboard";
+  if (href === "/sales") return pathname === "/sales" || (pathname.startsWith("/sales/") && !pathname.startsWith("/sales/new"));
+  if (href === "/purchases") return pathname === "/purchases" || pathname.startsWith("/purchases/");
   if (href.includes("/new")) return pathname === href;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function Sidebar({ businessName }: { businessName: string }) {
+export function Sidebar({ businessName, logoUrl }: { businessName: string; logoUrl?: string | null }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
   const NavContent = () => (
     <>
       <div className="border-b border-white/10 px-4 py-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-lg font-bold text-white">
-            S
-          </div>
+          {logoUrl && !logoError ? (
+            <img
+              src={logoUrl}
+              alt={businessName}
+              className="h-10 w-10 rounded-xl object-cover"
+              onError={() => setLogoError(true)}
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-lg font-bold text-white">
+              {businessName.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div>
             <h2 className="text-base font-bold text-sidebar-foreground">{businessName}</h2>
             <p className="text-xs text-sidebar-muted">Inventory Management</p>

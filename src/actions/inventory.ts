@@ -14,6 +14,11 @@ import {
 } from "@/lib/queries/inventory";
 import type { ActionResult } from "@/actions/auth";
 
+function parseOptionalUuid(value: FormDataEntryValue | null): string | undefined {
+  const s = value as string;
+  return s && s.length > 0 ? s : undefined;
+}
+
 export async function recordPurchaseAction(
   _prev: ActionResult | null,
   formData: FormData
@@ -30,6 +35,9 @@ export async function recordPurchaseAction(
   const parsed = purchaseSchema.safeParse({
     purchase_date: formData.get("purchase_date"),
     supplier: formData.get("supplier") || undefined,
+    party_id: formData.get("party_id") || undefined,
+    amount_paid: formData.get("amount_paid") ?? undefined,
+    due_date: formData.get("due_date") || undefined,
     notes: formData.get("notes") || undefined,
     items,
   });
@@ -47,7 +55,12 @@ export async function recordPurchaseAction(
         variant_id: i.variant_id,
         quantity: i.quantity,
         unit_cost: i.unit_cost,
-      }))
+      })),
+      {
+        partyId: parseOptionalUuid(formData.get("party_id")),
+        amountPaid: parsed.data.amount_paid,
+        dueDate: parsed.data.due_date,
+      }
     );
     return { success: true };
   } catch {
@@ -71,6 +84,11 @@ export async function recordSaleAction(
   const parsed = saleSchema.safeParse({
     sale_date: formData.get("sale_date"),
     platform: formData.get("platform") || "Instagram",
+    party_id: formData.get("party_id") || undefined,
+    payment_method_id: formData.get("payment_method_id") || undefined,
+    delivery_charge: formData.get("delivery_charge") ?? 0,
+    amount_paid: formData.get("amount_paid") ?? undefined,
+    due_date: formData.get("due_date") || undefined,
     notes: formData.get("notes") || undefined,
     items,
   });
@@ -88,7 +106,14 @@ export async function recordSaleAction(
         variant_id: i.variant_id,
         quantity: i.quantity,
         unit_sale_price: i.unit_sale_price,
-      }))
+      })),
+      {
+        partyId: parseOptionalUuid(formData.get("party_id")),
+        paymentMethodId: parseOptionalUuid(formData.get("payment_method_id")),
+        deliveryCharge: parsed.data.delivery_charge,
+        amountPaid: parsed.data.amount_paid,
+        dueDate: parsed.data.due_date,
+      }
     );
     return { success: true };
   } catch (err) {

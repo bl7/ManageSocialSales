@@ -1,4 +1,5 @@
 import { query } from "@/lib/db";
+import { toISODate } from "@/lib/date-ranges";
 import { T } from "@/lib/tables";
 import { getLedgerEntries } from "./ledger";
 
@@ -19,7 +20,7 @@ export async function getSalesChartData(days = 30) {
 export async function getPlatformChartData() {
   const monthStart = new Date();
   monthStart.setDate(1);
-  const monthStartStr = monthStart.toISOString().split("T")[0];
+  const monthStartStr = toISODate(monthStart);
 
   return query<{ platform: string; revenue: string; count: string }>(`
     SELECT

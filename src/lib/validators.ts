@@ -17,7 +17,7 @@ const variantSchema = z.object({
 export const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   sku: z.string().optional(),
-  category: z.string().optional(),
+  category_id: z.string().uuid().optional().or(z.literal("")),
   brand: z.string().optional(),
   supplier: z.string().optional(),
   description: z.string().optional(),
@@ -33,6 +33,9 @@ export const purchaseItemSchema = z.object({
 export const purchaseSchema = z.object({
   purchase_date: z.string().min(1, "Date is required"),
   supplier: z.string().optional(),
+  party_id: z.string().uuid().optional().or(z.literal("")),
+  amount_paid: z.coerce.number().min(0).optional(),
+  due_date: z.string().optional(),
   notes: z.string().optional(),
   items: z.array(purchaseItemSchema).min(1, "Add at least one item"),
 });
@@ -46,8 +49,55 @@ export const saleItemSchema = z.object({
 export const saleSchema = z.object({
   sale_date: z.string().min(1, "Date is required"),
   platform: z.string().default("Instagram"),
+  party_id: z.string().uuid().optional().or(z.literal("")),
+  payment_method_id: z.string().uuid().optional().or(z.literal("")),
+  delivery_charge: z.coerce.number().min(0, "Delivery charge cannot be negative").default(0),
+  amount_paid: z.coerce.number().min(0).optional(),
+  due_date: z.string().optional(),
   notes: z.string().optional(),
   items: z.array(saleItemSchema).min(1, "Add at least one item"),
+});
+
+export const salePaymentMethodSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+});
+
+export const partySchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  party_type: z.enum(["customer", "supplier", "both"]),
+  opening_balance: z.coerce.number().min(0).default(0),
+  notes: z.string().optional(),
+});
+
+export const paymentSchema = z.object({
+  party_id: z.string().uuid("Select a party"),
+  payment_date: z.string().min(1, "Date is required"),
+  amount: z.coerce.number().positive("Amount must be positive"),
+  direction: z.enum(["received", "paid"]),
+  payment_method: z.string().default("cash"),
+  notes: z.string().optional(),
+});
+
+export const expenseSchema = z.object({
+  expense_date: z.string().min(1, "Date is required"),
+  category_id: z.string().uuid("Select a category"),
+  amount: z.coerce.number().positive("Amount must be positive"),
+  party_id: z.string().uuid().optional().or(z.literal("")),
+  payment_method: z.string().default("cash"),
+  notes: z.string().optional(),
+});
+
+export const investmentSchema = z.object({
+  investor_name: z.string().min(1, "Investor name is required"),
+  investment_date: z.string().min(1, "Date is required"),
+  amount: z.coerce.number().positive("Amount must be positive"),
+  notes: z.string().optional(),
+});
+
+export const productCategorySchema = z.object({
+  name: z.string().min(1, "Category name is required").max(100),
 });
 
 export const adjustmentSchema = z.object({
@@ -69,6 +119,7 @@ export const settingsSchema = z.object({
   address: z.string().optional(),
   business_email: z.string().email("Invalid email").optional().or(z.literal("")),
   logo_url: z.string().url("Invalid URL").optional().or(z.literal("")),
+  invoice_prefix: z.string().optional(),
 });
 
 export function formatZodErrors(error: z.ZodError): string {

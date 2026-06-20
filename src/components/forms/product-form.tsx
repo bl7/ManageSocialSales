@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveProductAction } from "@/actions/products";
+import { quickCreateCategoryAction } from "@/actions/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { CreatableSelect, type CreatableOption } from "@/components/ui/creatable-select";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
 
 interface Variant {
@@ -23,12 +25,13 @@ interface ProductFormProps {
     id: string;
     name: string;
     sku: string | null;
-    category: string | null;
+    category_id: string | null;
     brand: string | null;
     supplier: string | null;
     description: string | null;
   };
   variants?: Variant[];
+  categories: CreatableOption[];
 }
 
 const emptyVariant = (): Variant => ({
@@ -39,13 +42,28 @@ const emptyVariant = (): Variant => ({
   reorder_level: 5,
 });
 
-export function ProductForm({ product, variants: initialVariants }: ProductFormProps) {
+export function ProductForm({ product, variants: initialVariants, categories: initialCategories }: ProductFormProps) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [categoryId, setCategoryId] = useState(product?.category_id || "");
+  const [categories, setCategories] = useState(initialCategories);
   const [variants, setVariants] = useState<Variant[]>(
     initialVariants?.length ? initialVariants : [emptyVariant()]
   );
+
+  async function handleCreateCategory(name: string) {
+    const result = await quickCreateCategoryAction(name);
+    if ("success" in result && result.success === false) {
+      toast.error(result.error);
+      return null;
+    }
+    if ("id" in result) {
+      toast.success(`Category "${result.name}" added`);
+      return { id: result.id, label: result.name };
+    }
+    return null;
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -55,6 +73,7 @@ export function ProductForm({ product, variants: initialVariants }: ProductFormP
     const form = e.currentTarget;
     const formData = new FormData(form);
     formData.set("variants", JSON.stringify(variants));
+    formData.set("category_id", categoryId);
     if (product?.id) formData.set("product_id", product.id);
 
     const result = await saveProductAction(null, formData);
@@ -104,8 +123,16 @@ export function ProductForm({ product, variants: initialVariants }: ProductFormP
               <Input id="sku" name="sku" defaultValue={product?.sku || ""} />
             </FormGroup>
             <FormGroup>
-              <Label htmlFor="category">Category</Label>
-              <Input id="category" name="category" defaultValue={product?.category || ""} />
+              <Label>Category</Label>
+              <CreatableSelect
+                name="category_id"
+                value={categoryId}
+                onChange={setCategoryId}
+                options={categories}
+                onOptionsChange={setCategories}
+                onCreate={handleCreateCategory}
+                placeholder="Search or add category..."
+              />
             </FormGroup>
             <FormGroup>
               <Label htmlFor="brand">Brand</Label>

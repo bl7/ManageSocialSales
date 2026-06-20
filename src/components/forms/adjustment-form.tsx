@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { VariantPicker } from "@/components/ui/variant-picker";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
+import { todayISODate } from "@/lib/date-ranges";
 
 interface Variant {
   id: string;
@@ -23,7 +24,7 @@ const REASONS = ["Damaged", "Lost", "Returned", "Correction", "Giveaway", "Other
 
 export function AdjustmentForm({ variants }: { variants: Variant[] }) {
   const router = useRouter();
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayISODate();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [variantId, setVariantId] = useState("");
@@ -36,6 +37,12 @@ export function AdjustmentForm({ variants }: { variants: Variant[] }) {
     e.preventDefault();
     setPending(true);
     setError("");
+
+    if (!variantId) {
+      setError("Please select a product variant.");
+      setPending(false);
+      return;
+    }
 
     if (quantityChange === 0) {
       setError("Quantity change cannot be zero");
@@ -74,6 +81,7 @@ export function AdjustmentForm({ variants }: { variants: Variant[] }) {
       <form onSubmit={handleSubmit} className="max-w-xl">
         {error && <div className="mb-4"><ErrorMessage message={error} /></div>}
 
+        <fieldset disabled={pending} className="disabled:opacity-60">
         <div className="rounded-xl border border-border bg-card p-5 space-y-4">
           <FormGroup>
             <Label htmlFor="adjustment_date">Adjustment Date *</Label>
@@ -124,6 +132,7 @@ export function AdjustmentForm({ variants }: { variants: Variant[] }) {
           <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Record Adjustment"}</Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
         </div>
+        </fieldset>
       </form>
     </div>
   );

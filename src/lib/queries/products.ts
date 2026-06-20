@@ -19,13 +19,13 @@ export async function getProductsWithVariants(filters: ProductFilters = {}) {
   if (filters.search) {
     conditions.push(`(
       p.name ILIKE $${idx} OR p.sku ILIKE $${idx} OR
-      p.category ILIKE $${idx} OR p.supplier ILIKE $${idx}
+      pc.name ILIKE $${idx} OR p.supplier ILIKE $${idx}
     )`);
     params.push(`%${filters.search}%`);
     idx++;
   }
   if (filters.category) {
-    conditions.push(`p.category = $${idx}`);
+    conditions.push(`p.category_id = $${idx}`);
     params.push(filters.category);
     idx++;
   }
@@ -62,7 +62,7 @@ export async function getProductsWithVariants(filters: ProductFilters = {}) {
       pv.*,
       p.name AS product_name,
       p.sku,
-      p.category,
+      pc.name AS category,
       p.supplier,
       COALESCE(sd.current_stock, 0) AS current_stock,
       COALESCE(sd.purchased_qty, 0) AS purchased_qty,
@@ -70,6 +70,7 @@ export async function getProductsWithVariants(filters: ProductFilters = {}) {
       lc.unit_cost AS latest_unit_cost
     FROM ${T.productVariants} pv
     JOIN ${T.products} p ON p.id = pv.product_id
+    LEFT JOIN ${T.productCategories} pc ON pc.id = p.category_id
     LEFT JOIN stock_data sd ON sd.variant_id = pv.id
     LEFT JOIN latest_costs lc ON lc.variant_id = pv.id
     ${where}
@@ -92,7 +93,12 @@ export async function getProductsWithVariants(filters: ProductFilters = {}) {
 }
 
 export async function getProductById(id: string) {
-  return queryOne(`SELECT * FROM ${T.products} WHERE id = $1`, [id]);
+  return queryOne(`
+    SELECT p.*, pc.name AS category_name
+    FROM ${T.products} p
+    LEFT JOIN ${T.productCategories} pc ON pc.id = p.category_id
+    WHERE p.id = $1
+  `, [id]);
 }
 
 export interface ProductVariantRow {
@@ -134,13 +140,6 @@ export async function getProductVariants(productId: string, activeOnly = true): 
     current_stock: Number(r.current_stock),
     stock_status: getStockStatus(Number(r.current_stock), r.reorder_level as number),
   }));
-}
-
-export async function getCategories() {
-  const rows = await query<{ category: string }>(
-    `SELECT DISTINCT category FROM ${T.products} WHERE category IS NOT NULL AND category != '' ORDER BY category`
-  );
-  return rows.map((r) => r.category);
 }
 
 export async function getSizes() {

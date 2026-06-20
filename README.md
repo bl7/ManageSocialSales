@@ -94,6 +94,11 @@ Open [http://localhost:3000](http://localhost:3000) and sign in with your admin 
 - **Stock Adjustment** — Damaged, lost, returned, corrections
 - **Stock Ledger** — Complete inventory movement history
 - **Reports** — Best sellers, slow movers, valuation, revenue, profit
+- **Sales** — Daily sales history with revenue and estimated profit by period
+- **Credit Summary** — Live view of amounts to collect and pay
+- **Investment** — Track investor capital and compare with business returns
+- **Purchases** — Purchase history with credit tracking
+- **Expenses** — Business expenses by category
 - **Settings** — Business name, currency, low stock threshold
 
 ## Core Inventory Rules

@@ -29,7 +29,8 @@ export interface Product {
   id: string;
   name: string;
   sku: string | null;
-  category: string | null;
+  category_id: string | null;
+  category_name?: string | null;
   brand: string | null;
   supplier: string | null;
   description: string | null;

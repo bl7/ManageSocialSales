@@ -17,6 +17,7 @@ interface SettingsFormProps {
     address?: string | null;
     business_email?: string | null;
     logo_url?: string | null;
+    invoice_prefix?: string | null;
   };
 }
 
@@ -56,6 +57,14 @@ export function SettingsForm({ settings }: SettingsFormProps) {
             <FormGroup>
               <Label htmlFor="logo_url">Logo URL</Label>
               <Input id="logo_url" name="logo_url" type="url" defaultValue={settings.logo_url || ""} placeholder="https://..." />
+            </FormGroup>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <h3 className="font-semibold">Invoicing</h3>
+            <FormGroup>
+              <Label htmlFor="invoice_prefix">Invoice Number Prefix</Label>
+              <Input id="invoice_prefix" name="invoice_prefix" defaultValue={settings.invoice_prefix || "INV-"} />
             </FormGroup>
           </div>
 

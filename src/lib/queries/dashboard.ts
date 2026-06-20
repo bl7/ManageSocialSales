@@ -1,4 +1,6 @@
 import { query, queryOne } from "@/lib/db";
+import { getTotalReceivables, getTotalPayables } from "@/lib/queries/parties";
+import { toISODate } from "@/lib/date-ranges";
 import { T } from "@/lib/tables";
 
 export async function getSettings() {
@@ -11,6 +13,7 @@ export async function getSettings() {
     address: string | null;
     business_email: string | null;
     logo_url: string | null;
+    invoice_prefix: string | null;
   }>(`SELECT * FROM ${T.settings} LIMIT 1`);
 }
 
@@ -72,7 +75,7 @@ export async function getDashboardStats() {
   const monthStart = new Date();
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
-  const monthStartStr = monthStart.toISOString().split("T")[0];
+  const monthStartStr = toISODate(monthStart);
 
   const salesMonth = await queryOne<{
     sales_count: string;
@@ -98,6 +101,11 @@ export async function getDashboardStats() {
     WHERE s.sale_date >= $1
   `, [monthStartStr]);
 
+  const [receivables, payables] = await Promise.all([
+    getTotalReceivables(),
+    getTotalPayables(),
+  ]);
+
   return {
     total_products: Number(stats?.total_products ?? 0),
     total_variants: Number(stats?.total_variants ?? 0),
@@ -109,6 +117,8 @@ export async function getDashboardStats() {
     units_sold_this_month: Number(salesMonth?.units_sold ?? 0),
     revenue_this_month: Number(salesMonth?.revenue ?? 0),
     profit_this_month: Number(profit?.profit ?? 0),
+    total_receivables: receivables,
+    total_payables: payables,
     currency,
   };
 }

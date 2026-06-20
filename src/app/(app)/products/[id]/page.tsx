@@ -27,7 +27,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
   if (!product) notFound();
 
-  const currency = settings?.currency ?? "$";
+  const currency = settings?.currency ?? "Rs.";
   const p = product as Record<string, unknown>;
 
   return (
@@ -43,7 +43,7 @@ export default async function ProductDetailPage({ params }: Props) {
         <Card>
           <h3 className="mb-3 font-semibold">Product Information</h3>
           <dl className="space-y-2 text-sm">
-            <div className="flex justify-between"><dt className="text-muted">Category</dt><dd>{(p.category as string) || "—"}</dd></div>
+            <div className="flex justify-between"><dt className="text-muted">Category</dt><dd>{(p.category_name as string) || "—"}</dd></div>
             <div className="flex justify-between"><dt className="text-muted">Brand</dt><dd>{(p.brand as string) || "—"}</dd></div>
             <div className="flex justify-between"><dt className="text-muted">Supplier</dt><dd>{(p.supplier as string) || "—"}</dd></div>
             {(p.description as string) && (

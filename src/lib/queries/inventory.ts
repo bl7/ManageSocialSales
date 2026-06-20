@@ -2,6 +2,11 @@ import type { PoolClient } from "pg";
 import { v4 as uuidv4 } from "uuid";
 import { withTransaction } from "@/lib/db";
 import { T } from "@/lib/tables";
+import {
+  addPartyLedgerEntryClient,
+  derivePaymentStatus,
+  reserveInvoiceNumberClient,
+} from "@/lib/queries/parties";
 
 async function getVariantStockClient(
   client: PoolClient,
@@ -21,11 +26,18 @@ export interface PurchaseItemInput {
   unit_cost: number;
 }
 
+export interface PurchaseOptions {
+  partyId?: string;
+  amountPaid?: number;
+  dueDate?: string;
+}
+
 export async function recordPurchase(
   purchaseDate: string,
   supplier: string | undefined,
   notes: string | undefined,
-  items: PurchaseItemInput[]
+  items: PurchaseItemInput[],
+  options: PurchaseOptions = {}
 ): Promise<string> {
   return withTransaction(async (client) => {
     const purchaseId = uuidv4();
@@ -35,10 +47,25 @@ export async function recordPurchase(
       totalAmount += item.quantity * item.unit_cost;
     }
 
+    const amountPaid = options.amountPaid ?? totalAmount;
+    const paymentStatus = derivePaymentStatus(totalAmount, amountPaid);
+    const creditDue = Math.max(0, totalAmount - amountPaid);
+
     await client.query(
-      `INSERT INTO ${T.purchases} (id, purchase_date, supplier, notes, total_amount)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [purchaseId, purchaseDate, supplier || null, notes || null, totalAmount]
+      `INSERT INTO ${T.purchases}
+       (id, purchase_date, supplier, party_id, notes, total_amount, payment_status, amount_paid, due_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        purchaseId,
+        purchaseDate,
+        supplier || null,
+        options.partyId || null,
+        notes || null,
+        totalAmount,
+        paymentStatus,
+        amountPaid,
+        options.dueDate || null,
+      ]
     );
 
     for (const item of items) {
@@ -70,6 +97,18 @@ export async function recordPurchase(
       );
     }
 
+    if (options.partyId && creditDue > 0) {
+      await addPartyLedgerEntryClient(client, {
+        partyId: options.partyId,
+        entryDate: purchaseDate,
+        entryType: "purchase",
+        amount: creditDue,
+        referenceType: "purchase",
+        referenceId: purchaseId,
+        notes: notes || undefined,
+      });
+    }
+
     return purchaseId;
   });
 }
@@ -80,11 +119,20 @@ export interface SaleItemInput {
   unit_sale_price: number;
 }
 
+export interface SaleOptions {
+  partyId?: string;
+  paymentMethodId?: string;
+  deliveryCharge?: number;
+  amountPaid?: number;
+  dueDate?: string;
+}
+
 export async function recordSale(
   saleDate: string,
   platform: string,
   notes: string | undefined,
-  items: SaleItemInput[]
+  items: SaleItemInput[],
+  options: SaleOptions = {}
 ): Promise<string> {
   return withTransaction(async (client) => {
     for (const item of items) {
@@ -97,16 +145,38 @@ export async function recordSale(
     }
 
     const saleId = uuidv4();
-    let totalAmount = 0;
+    let subtotal = 0;
 
     for (const item of items) {
-      totalAmount += item.quantity * item.unit_sale_price;
+      subtotal += item.quantity * item.unit_sale_price;
     }
 
+    const deliveryCharge = options.deliveryCharge ?? 0;
+    const totalAmount = subtotal + deliveryCharge;
+    const amountPaid = options.amountPaid ?? totalAmount;
+    const paymentStatus = derivePaymentStatus(totalAmount, amountPaid);
+    const creditDue = Math.max(0, totalAmount - amountPaid);
+    const invoiceNumber = await reserveInvoiceNumberClient(client);
+
     await client.query(
-      `INSERT INTO ${T.sales} (id, sale_date, platform, notes, total_amount)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [saleId, saleDate, platform, notes || null, totalAmount]
+      `INSERT INTO ${T.sales}
+       (id, sale_date, platform, party_id, payment_method_id, delivery_charge, notes,
+        total_amount, payment_status, amount_paid, due_date, invoice_number)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [
+        saleId,
+        saleDate,
+        platform,
+        options.partyId || null,
+        options.paymentMethodId || null,
+        deliveryCharge,
+        notes || null,
+        totalAmount,
+        paymentStatus,
+        amountPaid,
+        options.dueDate || null,
+        invoiceNumber,
+      ]
     );
 
     for (const item of items) {
@@ -136,6 +206,18 @@ export async function recordSale(
           notes || null,
         ]
       );
+    }
+
+    if (options.partyId && creditDue > 0) {
+      await addPartyLedgerEntryClient(client, {
+        partyId: options.partyId,
+        entryDate: saleDate,
+        entryType: "sale",
+        amount: creditDue,
+        referenceType: "sale",
+        referenceId: saleId,
+        notes: notes || undefined,
+      });
     }
 
     return saleId;

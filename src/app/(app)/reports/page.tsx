@@ -34,6 +34,7 @@ export default async function ReportsPage({ searchParams }: Props) {
   const currency = settings?.currency ?? "Rs.";
   const totalValuation = valuation.reduce((s, r) => s + Number(r.total_value), 0);
   const totalProfit = profit.reduce((s, r) => s + Number(r.estimated_profit), 0);
+  const hasDateFilter = Boolean(params.dateFrom || params.dateTo);
 
   function ReportTable({ headers, rows }: { headers: string[]; rows: (string | number)[][] }) {
     if (rows.length === 0) return <p className="text-sm text-muted">No data available.</p>;
@@ -64,6 +65,40 @@ export default async function ReportsPage({ searchParams }: Props) {
       <ReportsFilters dateFrom={params.dateFrom} dateTo={params.dateTo} />
 
       <div className="grid gap-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className={hasDateFilter ? "border-primary/30" : ""}>
+            <h3 className="mb-1 font-semibold">Revenue Report</h3>
+            <p className="mb-4 text-2xl font-bold text-primary">
+              {formatCurrency(revenue.total?.total_revenue ?? 0, currency)}
+              <span className="ml-2 text-sm font-normal text-muted">
+                ({revenue.total?.total_units ?? 0} units)
+              </span>
+            </p>
+            <ReportTable
+              headers={["Date", "Platform", "Sales", "Units", "Revenue"]}
+              rows={revenue.rows.map((r) => [
+                formatDate(r.sale_date), r.platform, r.sale_count, r.units_sold,
+                formatCurrency(r.revenue, currency),
+              ])}
+            />
+          </Card>
+
+          <Card className={hasDateFilter ? "border-primary/30" : ""}>
+            <h3 className="mb-1 font-semibold">Estimated Profit Report</h3>
+            <p className="mb-1 text-2xl font-bold text-primary">{formatCurrency(totalProfit, currency)}</p>
+            <p className="mb-4 text-xs text-muted">Based on default cost prices</p>
+            <ReportTable
+              headers={["Date", "Product", "Qty", "Revenue", "Est. Cost", "Est. Profit"]}
+              rows={profit.map((r) => [
+                formatDate(r.sale_date), `${r.product_name} ${r.size}/${r.color}`,
+                r.quantity, formatCurrency(r.revenue, currency),
+                formatCurrency(r.estimated_cost, currency),
+                formatCurrency(r.estimated_profit, currency),
+              ])}
+            />
+          </Card>
+        </div>
+
         <Card>
           <h3 className="mb-4 font-semibold">Best Selling Products</h3>
           <ReportTable
@@ -116,37 +151,6 @@ export default async function ReportsPage({ searchParams }: Props) {
               r.product_name, r.size, r.color, r.current_stock,
               formatCurrency(r.unit_cost, currency),
               formatCurrency(r.total_value, currency),
-            ])}
-          />
-        </Card>
-
-        <Card>
-          <h3 className="mb-1 font-semibold">Revenue Report</h3>
-          <p className="mb-4 text-2xl font-bold">
-            {formatCurrency(revenue.total?.total_revenue ?? 0, currency)}
-            <span className="ml-2 text-sm font-normal text-muted">
-              ({revenue.total?.total_units ?? 0} units)
-            </span>
-          </p>
-          <ReportTable
-            headers={["Date", "Platform", "Sales", "Units", "Revenue"]}
-            rows={revenue.rows.map((r) => [
-              formatDate(r.sale_date), r.platform, r.sale_count, r.units_sold,
-              formatCurrency(r.revenue, currency),
-            ])}
-          />
-        </Card>
-
-        <Card>
-          <h3 className="mb-1 font-semibold">Estimated Profit Report</h3>
-          <p className="mb-4 text-2xl font-bold">{formatCurrency(totalProfit, currency)}</p>
-          <ReportTable
-            headers={["Date", "Product", "Qty", "Revenue", "Est. Cost", "Est. Profit"]}
-            rows={profit.map((r) => [
-              formatDate(r.sale_date), `${r.product_name} ${r.size}/${r.color}`,
-              r.quantity, formatCurrency(r.revenue, currency),
-              formatCurrency(r.estimated_cost, currency),
-              formatCurrency(r.estimated_profit, currency),
             ])}
           />
         </Card>

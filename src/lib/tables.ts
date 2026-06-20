@@ -10,4 +10,12 @@ export const T = {
   stockAdjustments: "bij_stock_adjustments",
   inventoryLedger: "bij_inventory_ledger",
   settings: "bij_settings",
+  parties: "bij_parties",
+  partyLedger: "bij_party_ledger",
+  payments: "bij_payments",
+  expenseCategories: "bij_expense_categories",
+  expenses: "bij_expenses",
+  investments: "bij_investments",
+  productCategories: "bij_product_categories",
+  salePaymentMethods: "bij_sale_payment_methods",
 } as const;

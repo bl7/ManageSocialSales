@@ -21,6 +21,7 @@ export async function updateSettingsAction(
     address: formData.get("address") || undefined,
     business_email: formData.get("business_email") || undefined,
     logo_url: formData.get("logo_url") || undefined,
+    invoice_prefix: formData.get("invoice_prefix") || undefined,
   });
 
   if (!parsed.success) {
@@ -30,7 +31,7 @@ export async function updateSettingsAction(
   try {
     await query(
       `UPDATE ${T.settings} SET business_name=$1, currency=$2, low_stock_default=$3,
-       phone=$4, address=$5, business_email=$6, logo_url=$7, updated_at=NOW()
+       phone=$4, address=$5, business_email=$6, logo_url=$7, invoice_prefix=$8, updated_at=NOW()
        WHERE id = (SELECT id FROM ${T.settings} LIMIT 1)`,
       [
         parsed.data.business_name,
@@ -40,6 +41,7 @@ export async function updateSettingsAction(
         parsed.data.address || null,
         parsed.data.business_email || null,
         parsed.data.logo_url || null,
+        parsed.data.invoice_prefix || "INV-",
       ]
     );
     revalidatePath("/", "layout");
