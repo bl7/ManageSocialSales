@@ -1,13 +1,15 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useState, useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { recordExpenseAction } from "@/actions/expenses";
+import { quickCreateExpenseCategoryAction } from "@/actions/expense-categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { CreatableSelect, type CreatableOption } from "@/components/ui/creatable-select";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
 import { todayISODate } from "@/lib/date-ranges";
 
@@ -15,17 +17,34 @@ interface ExpenseFormProps {
   categories: { id: string; name: string }[];
 }
 
-export function ExpenseForm({ categories }: ExpenseFormProps) {
+export function ExpenseForm({ categories: initialCategories }: ExpenseFormProps) {
   const router = useRouter();
   const today = todayISODate();
   const [state, action, pending] = useActionState(recordExpenseAction, null);
+  const [categoryId, setCategoryId] = useState("");
+  const [categoryOptions, setCategoryOptions] = useState<CreatableOption[]>(() =>
+    initialCategories.map((c) => ({ id: c.id, label: c.name }))
+  );
 
   useEffect(() => {
     if (state?.success) {
       toast.success("Expense recorded");
-      router.refresh();
+      router.push("/expenses");
     }
   }, [state, router]);
+
+  async function handleCreateCategory(name: string) {
+    const result = await quickCreateExpenseCategoryAction(name);
+    if ("success" in result && result.success === false) {
+      toast.error(result.error);
+      return null;
+    }
+    if ("id" in result) {
+      toast.success(`Category "${result.name}" added`);
+      return { id: result.id, label: result.name };
+    }
+    return null;
+  }
 
   return (
     <div>
@@ -40,13 +59,16 @@ export function ExpenseForm({ categories }: ExpenseFormProps) {
             <Input id="expense_date" name="expense_date" type="date" required defaultValue={today} />
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="category_id">Category *</Label>
-            <Select id="category_id" name="category_id" required defaultValue="">
-              <option value="" disabled>Select category</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </Select>
+            <Label>Category *</Label>
+            <CreatableSelect
+              name="category_id"
+              value={categoryId}
+              onChange={setCategoryId}
+              options={categoryOptions}
+              onOptionsChange={setCategoryOptions}
+              onCreate={handleCreateCategory}
+              placeholder="Search or add category..."
+            />
           </FormGroup>
           <FormGroup>
             <Label htmlFor="amount">Amount *</Label>

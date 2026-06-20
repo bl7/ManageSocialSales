@@ -46,7 +46,9 @@ export async function getBusinessEarnings() {
         COALESCE(SUM(si.line_total), 0)::numeric AS revenue,
         COALESCE(SUM(si.line_total - si.quantity * pv.default_cost_price), 0)::numeric AS gross_profit
       FROM ${T.saleItems} si
+      JOIN ${T.sales} s ON s.id = si.sale_id
       JOIN ${T.productVariants} pv ON pv.id = si.variant_id
+      WHERE COALESCE(s.status, 'active') = 'active'
     `),
     getExpensesTotal(),
   ]);

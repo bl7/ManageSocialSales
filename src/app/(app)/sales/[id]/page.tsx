@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardValue } from "@/components/ui/card";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
+import { VoidSaleButton } from "@/components/sales/void-sale-button";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
 
 interface Props {
@@ -31,12 +32,21 @@ export default async function SaleDetailPage({ params }: Props) {
   const units = items.reduce((sum, i) => sum + i.quantity, 0);
   const creditDue = Math.max(0, Number(s.total_amount) - Number(s.amount_paid ?? s.total_amount));
 
+  const isVoided = s.status === "voided";
+
   return (
     <div>
+      {isVoided && (
+        <div className="mb-4 rounded-xl border border-danger/30 bg-red-50 px-4 py-3 text-sm text-danger">
+          This sale was voided{s.void_reason ? `: ${s.void_reason as string}` : ""}.
+          {s.voided_at ? ` (${formatDateTime(s.voided_at as string)})` : ""}
+        </div>
+      )}
       <PageHeader
         title={`Sale — ${formatDate(s.sale_date as string)}`}
         description={(s.invoice_number as string) || (s.platform as string) || undefined}
       >
+        {!isVoided && <VoidSaleButton saleId={id} />}
         <Link href={`/sales/${id}/invoice`}><Button variant="outline">Invoice</Button></Link>
         <Link href="/sales"><Button variant="outline">Back to Sales</Button></Link>
       </PageHeader>

@@ -30,7 +30,7 @@ export function CategoryForm({ category, productCount = 0 }: CategoryFormProps) 
     const result = await saveCategoryAction(null, formData);
     if (result && "id" in result && result.success) {
       toast.success("Category saved");
-      router.push("/categories");
+      router.push("/settings?tab=categories");
       return;
     }
     if (result && !result.success) {
@@ -45,7 +45,7 @@ export function CategoryForm({ category, productCount = 0 }: CategoryFormProps) 
     const result = await deleteCategoryAction(category.id);
     if (result.success) {
       toast.success("Category deleted");
-      router.push("/categories");
+      router.push("/settings?tab=categories");
       return;
     }
     toast.error(result.error);

@@ -30,7 +30,7 @@ export function PaymentMethodForm({ method, saleCount = 0 }: PaymentMethodFormPr
     const result = await savePaymentMethodAction(null, formData);
     if (result && "id" in result && result.success) {
       toast.success("Payment method saved");
-      router.push("/payment-methods");
+      router.push("/settings?tab=payment-methods");
       return;
     }
     if (result && !result.success) {
@@ -45,7 +45,7 @@ export function PaymentMethodForm({ method, saleCount = 0 }: PaymentMethodFormPr
     const result = await deletePaymentMethodAction(method.id);
     if (result.success) {
       toast.success("Payment method deleted");
-      router.push("/payment-methods");
+      router.push("/settings?tab=payment-methods");
       return;
     }
     toast.error(result.error);

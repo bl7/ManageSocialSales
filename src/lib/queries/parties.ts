@@ -3,7 +3,7 @@ import { query, queryOne } from "@/lib/db";
 import { T } from "@/lib/tables";
 
 export type PartyType = "customer" | "supplier" | "both";
-export type LedgerEntryType = "sale" | "purchase" | "payment_in" | "payment_out" | "opening";
+export type LedgerEntryType = "sale" | "purchase" | "payment_in" | "payment_out" | "opening" | "sale_void" | "purchase_void";
 
 export interface PartyRow {
   id: string;
@@ -116,6 +116,8 @@ export async function addPartyLedgerEntryClient(
   let balanceAfter = current;
   if (["sale", "purchase", "opening"].includes(data.entryType)) {
     balanceAfter = current + data.amount;
+  } else if (["sale_void", "purchase_void", "payment_in", "payment_out"].includes(data.entryType)) {
+    balanceAfter = current - data.amount;
   } else {
     balanceAfter = current - data.amount;
   }

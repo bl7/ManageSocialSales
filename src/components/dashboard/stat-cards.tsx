@@ -85,7 +85,7 @@ export function StatCards({ stats }: StatCardsProps) {
       value: formatCurrency(stats.total_receivables, c),
       subtitle: "Customer udhar",
       icon: <Wallet className="h-5 w-5" />,
-      href: "/credit",
+      href: "/parties?tab=to-collect",
       warn: stats.total_receivables > 0,
     },
     {
@@ -93,7 +93,7 @@ export function StatCards({ stats }: StatCardsProps) {
       value: formatCurrency(stats.total_payables, c),
       subtitle: "Supplier credit",
       icon: <Wallet className="h-5 w-5" />,
-      href: "/credit",
+      href: "/parties?tab=to-collect",
       warn: stats.total_payables > 0,
     },
   ];

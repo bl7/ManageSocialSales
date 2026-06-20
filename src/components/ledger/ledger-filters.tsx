@@ -64,7 +64,9 @@ export function LedgerFilters({
           <option value="">All Types</option>
           <option value="purchase">Purchase</option>
           <option value="sale">Sale</option>
-          <option value="adjustment">Adjustment</option>
+          <option value="adjustment">Stock Correction</option>
+          <option value="sale_void">Sale Void</option>
+          <option value="purchase_void">Purchase Void</option>
         </select>
         <input name="dateFrom" type="date" defaultValue={dateFrom}
           className="h-10 rounded-lg border border-border px-3 text-sm" />

@@ -36,7 +36,8 @@ export default async function ProductDetailPage({ params }: Props) {
         <Link href={`/products/${id}/edit`}><Button variant="outline">Edit Product</Button></Link>
         <Link href={`/purchases/new?product=${id}`}><Button variant="outline">Record Purchase</Button></Link>
         <Link href={`/sales/new?product=${id}`}><Button>Record Sale</Button></Link>
-        <Link href={`/adjustments/new?product=${id}`}><Button variant="outline">Stock Adjustment</Button></Link>
+        <Link href={`/stock-corrections/new?product=${id}`}><Button variant="outline">Stock Correction</Button></Link>
+        <Link href={`/ledger?productId=${id}`}><Button variant="outline">View Ledger</Button></Link>
       </PageHeader>
 
       <div className="mb-6 grid gap-4 md:grid-cols-2">

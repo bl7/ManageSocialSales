@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { getLedgerEntries } from "@/lib/queries/ledger";
 import { query } from "@/lib/db";
 import { T } from "@/lib/tables";
 import { getSettings } from "@/lib/queries/dashboard";
+import { resolveLedgerDateRange } from "@/lib/date-ranges";
 import { PageHeader, EmptyState } from "@/components/ui/page";
+import { Button } from "@/components/ui/button";
 import { MovementBadge } from "@/components/ui/badge";
 import { ExportButton } from "@/components/export/export-button";
 import { LedgerFilters } from "@/components/ledger/ledger-filters";
@@ -17,13 +20,16 @@ interface Props {
     movementType?: string;
     dateFrom?: string;
     dateTo?: string;
+    preset?: string;
   }>;
 }
 
 export default async function LedgerPage({ searchParams }: Props) {
   const params = await searchParams;
+  const { from: dateFrom, to: dateTo } = resolveLedgerDateRange(params);
+  const filters = { ...params, dateFrom, dateTo };
   const [entries, products, settings] = await Promise.all([
-    getLedgerEntries(params),
+    getLedgerEntries(filters),
     query<{ id: string; name: string }>(`SELECT id, name FROM ${T.products} WHERE is_active = true ORDER BY name`),
     getSettings(),
   ]);
@@ -31,7 +37,8 @@ export default async function LedgerPage({ searchParams }: Props) {
 
   return (
     <div>
-      <PageHeader title="Stock Ledger" description="Complete history of all stock movements">
+      <PageHeader title="Stock Ledger" description="Complete history of all stock movements — why stock is what it is">
+        <Link href="/stock-corrections/new"><Button>Stock Correction</Button></Link>
         <ExportButton href={`/api/export/ledger?${new URLSearchParams(params as Record<string, string>).toString()}`} />
       </PageHeader>
 
@@ -41,8 +48,8 @@ export default async function LedgerPage({ searchParams }: Props) {
         size={params.size}
         color={params.color}
         movementType={params.movementType}
-        dateFrom={params.dateFrom}
-        dateTo={params.dateTo}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
       />
 
       {entries.length === 0 ? (

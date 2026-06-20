@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { requireUser } from "@/actions/auth";
 import {
   purchaseSchema,
@@ -11,6 +12,8 @@ import {
   recordPurchase,
   recordSale,
   recordAdjustment,
+  voidSale,
+  voidPurchase,
 } from "@/lib/queries/inventory";
 import type { ActionResult } from "@/actions/auth";
 
@@ -122,6 +125,44 @@ export async function recordSaleAction(
       return { success: false, error: message };
     }
     return { success: false, error: "Failed to record sale. Please try again." };
+  }
+}
+
+export async function voidSaleAction(saleId: string, voidReason: string): Promise<ActionResult> {
+  await requireUser();
+  if (!voidReason.trim()) return { success: false, error: "Reason is required" };
+  try {
+    await voidSale(saleId, voidReason.trim());
+    revalidatePath("/sales");
+    revalidatePath("/ledger");
+    revalidatePath("/reports");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    if (message.includes("already voided") || message.includes("not found")) {
+      return { success: false, error: message };
+    }
+    return { success: false, error: "Failed to void sale" };
+  }
+}
+
+export async function voidPurchaseAction(purchaseId: string, voidReason: string): Promise<ActionResult> {
+  await requireUser();
+  if (!voidReason.trim()) return { success: false, error: "Reason is required" };
+  try {
+    await voidPurchase(purchaseId, voidReason.trim());
+    revalidatePath("/purchases");
+    revalidatePath("/ledger");
+    revalidatePath("/reports");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    if (message.includes("already voided") || message.includes("not found") || message.includes("negative")) {
+      return { success: false, error: message };
+    }
+    return { success: false, error: "Failed to void purchase" };
   }
 }
 

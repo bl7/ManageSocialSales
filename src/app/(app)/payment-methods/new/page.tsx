@@ -1,5 +1,5 @@
-import { PaymentMethodForm } from "@/components/forms/payment-method-form";
+import { redirect } from "next/navigation";
 
-export default function NewPaymentMethodPage() {
-  return <PaymentMethodForm />;
+export default function PaymentMethodsNewRedirect() {
+  redirect("/settings/payment-methods/new");
 }

@@ -4,8 +4,9 @@ import { getPurchaseById, getPurchaseItems } from "@/lib/queries/purchases";
 import { getSettings } from "@/lib/queries/dashboard";
 import { PageHeader } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
+import { VoidPurchaseButton } from "@/components/purchases/void-purchase-button";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -23,17 +24,25 @@ export default async function PurchaseDetailPage({ params }: Props) {
 
   const currency = settings?.currency ?? "Rs.";
   const p = purchase as Record<string, unknown>;
+  const isVoided = p.status === "voided";
 
   return (
     <div>
+      {isVoided && (
+        <div className="mb-4 rounded-xl border border-danger/30 bg-red-50 px-4 py-3 text-sm text-danger">
+          This purchase was voided{p.void_reason ? `: ${p.void_reason as string}` : ""}.
+          {p.voided_at ? ` (${formatDateTime(p.voided_at as string)})` : ""}
+        </div>
+      )}
       <PageHeader title={`Purchase — ${formatDate(p.purchase_date as string)}`}>
+        {!isVoided && <VoidPurchaseButton purchaseId={id} />}
         <Link href="/purchases"><Button variant="outline">Back</Button></Link>
       </PageHeader>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3 text-sm">
         <div><span className="text-muted">Supplier:</span> {(p.party_name as string) || (p.supplier as string) || "—"}</div>
         <div><span className="text-muted">Total:</span> {formatCurrency(p.total_amount as string, currency)}</div>
-        <div><span className="text-muted">Status:</span> <span className="capitalize">{p.payment_status as string}</span></div>
+        <div><span className="text-muted">Status:</span> <span className="capitalize">{isVoided ? "voided" : (p.payment_status as string)}</span></div>
       </div>
 
       <DataTable>

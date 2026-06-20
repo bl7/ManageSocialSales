@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { StatCards } from "@/components/dashboard/stat-cards";
 import { SalesChart, PlatformChart } from "@/components/dashboard/dashboard-charts";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { Plus, ShoppingCart } from "lucide-react";
+import { Plus, PackagePlus, ShoppingCart, Scale } from "lucide-react";
 
 export default async function DashboardPage() {
   const [stats, salesChart, platformChart, activity, settings] = await Promise.all([
@@ -40,14 +40,34 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <PageHeader title="Dashboard" description="Your business at a glance">
-        <Link href="/sales/new">
-          <Button><ShoppingCart className="mr-2 h-4 w-4" />Record Sale</Button>
+      <PageHeader title="Dashboard" description="Your business at a glance" />
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Link href="/sales/new" className="sm:col-span-2 lg:col-span-1">
+          <Button size="lg" className="h-14 w-full text-base shadow-md">
+            <ShoppingCart className="mr-2 h-5 w-5" />
+            Record Sale
+          </Button>
+        </Link>
+        <Link href="/purchases/new">
+          <Button size="lg" variant="outline" className="h-14 w-full">
+            <PackagePlus className="mr-2 h-5 w-5" />
+            Record Purchase
+          </Button>
         </Link>
         <Link href="/products/new">
-          <Button variant="outline"><Plus className="mr-2 h-4 w-4" />Add Product</Button>
+          <Button size="lg" variant="outline" className="h-14 w-full">
+            <Plus className="mr-2 h-5 w-5" />
+            Add Product
+          </Button>
         </Link>
-      </PageHeader>
+        <Link href="/stock-corrections/new">
+          <Button size="lg" variant="outline" className="h-14 w-full">
+            <Scale className="mr-2 h-5 w-5" />
+            Stock Correction
+          </Button>
+        </Link>
+      </div>
 
       <StatCards stats={{ ...stats, currency }} />
 

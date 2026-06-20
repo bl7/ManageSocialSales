@@ -32,8 +32,8 @@ export function PeriodFilters({ dateFrom, dateTo, basePath = "/purchases" }: Pro
             {p.label}
           </Button>
         ))}
-        <Link href={basePath}>
-          <Button type="button" variant="outline" size="sm">Clear</Button>
+        <Link href={`${basePath}?preset=month`}>
+          <Button type="button" variant="outline" size="sm">This month</Button>
         </Link>
       </div>
       <form action={basePath} method="get" className="flex flex-wrap items-end gap-3">

@@ -1,5 +1,5 @@
-export type MovementType = "purchase" | "sale" | "adjustment";
-export type ReferenceType = "purchase_item" | "sale_item" | "stock_adjustment";
+export type MovementType = "purchase" | "sale" | "adjustment" | "sale_void" | "purchase_void";
+export type ReferenceType = "purchase_item" | "sale_item" | "stock_adjustment" | "sale_void" | "purchase_void";
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 export type SalePlatform =
   | "Instagram"
@@ -13,7 +13,7 @@ export type AdjustmentReason =
   | "Damaged"
   | "Lost"
   | "Returned"
-  | "Correction"
+  | "Wrong Count"
   | "Giveaway"
   | "Other";
 

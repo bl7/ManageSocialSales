@@ -58,6 +58,40 @@ export const REPORT_DATE_PRESETS = [
   { id: "90days", label: "Last 90 days" },
 ] as const;
 
+export function resolveListDateRange(
+  params: { dateFrom?: string; dateTo?: string; preset?: string; range?: string },
+  options?: { defaultPreset?: string; allowAll?: boolean }
+): { from: string | undefined; to: string | undefined } {
+  const defaultPreset = options?.defaultPreset ?? "month";
+  if (options?.allowAll && params.range === "all") {
+    return { from: undefined, to: undefined };
+  }
+  if (params.preset) {
+    const range = getDateRange(params.preset);
+    if (range) return { from: range.from, to: range.to };
+  }
+  if (params.dateFrom && params.dateTo) {
+    return { from: params.dateFrom, to: params.dateTo };
+  }
+  const fallback = getDateRange(defaultPreset);
+  return { from: fallback?.from, to: fallback?.to };
+}
+
+export function resolveLedgerDateRange(params: { dateFrom?: string; dateTo?: string; preset?: string }) {
+  if (params.preset === "today" || (!params.dateFrom && !params.dateTo && !params.preset)) {
+    const today = getDateRange("today");
+    return { from: today?.from, to: today?.to };
+  }
+  if (params.preset) {
+    const range = getDateRange(params.preset);
+    if (range) return { from: range.from, to: range.to };
+  }
+  if (params.dateFrom || params.dateTo) {
+    return { from: params.dateFrom, to: params.dateTo };
+  }
+  return { from: undefined, to: undefined };
+}
+
 export function matchesPreset(dateFrom: string | undefined, dateTo: string | undefined, preset: string): boolean {
   if (!dateFrom || !dateTo) return false;
   const range = getDateRange(preset);

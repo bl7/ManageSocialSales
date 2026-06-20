@@ -1,8 +1,9 @@
 import { query, queryOne } from "@/lib/db";
 import { T } from "@/lib/tables";
+import { ACTIVE_SALE } from "@/lib/query-filters";
 
-function buildDateFilter(dateFrom?: string, dateTo?: string) {
-  const conditions: string[] = [];
+function buildDateFilter(dateFrom?: string, dateTo?: string, activeOnly = true) {
+  const conditions: string[] = activeOnly ? [ACTIVE_SALE] : [];
   const params: unknown[] = [];
   let idx = 1;
 
@@ -34,7 +35,8 @@ export async function getSalesSummary(dateFrom?: string, dateTo?: string) {
       COALESCE(SUM(si.quantity), 0)::int AS units_sold,
       COALESCE((
         SELECT SUM(total_amount) FROM ${T.sales} s2
-        ${where.replace(/\bs\./g, "s2.")}
+        WHERE COALESCE(s2.status, 'active') = 'active'
+        ${where ? " AND " + where.replace(/^WHERE\s+/i, "").replace(/\bs\./g, "s2.") : ""}
       ), 0)::numeric AS revenue,
       COALESCE(SUM(si.line_total - si.quantity * pv.default_cost_price), 0)::numeric AS estimated_profit
     FROM ${T.sales} s
@@ -58,6 +60,7 @@ export interface SaleListRow {
   notes: string | null;
   total_amount: string;
   created_at: string;
+  status?: string;
   item_count: number;
   units: number;
   revenue: string;
@@ -65,7 +68,7 @@ export interface SaleListRow {
 }
 
 export async function getSalesList(dateFrom?: string, dateTo?: string): Promise<SaleListRow[]> {
-  const { where, params } = buildDateFilter(dateFrom, dateTo);
+  const { where, params } = buildDateFilter(dateFrom, dateTo, false);
 
   const rows = await query<SaleListRow>(`
     SELECT
@@ -77,7 +80,9 @@ export async function getSalesList(dateFrom?: string, dateTo?: string): Promise<
       s.created_at,
       s.payment_status,
       s.amount_paid,
-      s.delivery_charge,
+      s.status,
+      s.voided_at,
+      s.void_reason,
       s.invoice_number,
       pm.name AS payment_method_name,
       pt.name AS party_name,

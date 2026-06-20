@@ -1,5 +1,6 @@
 import { query, queryOne } from "@/lib/db";
 import { T } from "@/lib/tables";
+import { ACTIVE_PURCHASE } from "@/lib/query-filters";
 
 export async function getLastPurchaseSupplier(): Promise<string | null> {
   const row = await queryOne<{ supplier: string }>(
@@ -26,8 +27,8 @@ export async function getSupplierSuggestions(): Promise<string[]> {
   return Array.from(set).sort();
 }
 
-function buildDateFilter(dateFrom?: string, dateTo?: string) {
-  const conditions: string[] = [];
+function buildDateFilter(dateFrom?: string, dateTo?: string, activeOnly = true) {
+  const conditions: string[] = activeOnly ? [ACTIVE_PURCHASE] : [];
   const params: unknown[] = [];
   let idx = 1;
   if (dateFrom) { conditions.push(`p.purchase_date >= $${idx}`); params.push(dateFrom); idx++; }
@@ -56,7 +57,7 @@ export async function getPurchasesSummary(dateFrom?: string, dateTo?: string) {
 }
 
 export async function getPurchasesList(dateFrom?: string, dateTo?: string) {
-  const { where, params } = buildDateFilter(dateFrom, dateTo);
+  const { where, params } = buildDateFilter(dateFrom, dateTo, false);
   return query(`
     SELECT p.*, pt.name AS party_name,
       COUNT(pi.id)::int AS item_count,

@@ -11,7 +11,7 @@ export async function getSalesChartData(days = 30) {
       COALESCE(SUM(si.quantity), 0)::int AS units
     FROM ${T.sales} s
     JOIN ${T.saleItems} si ON si.sale_id = s.id
-    WHERE s.sale_date >= CURRENT_DATE - $1::int
+    WHERE s.sale_date >= CURRENT_DATE - $1::int AND COALESCE(s.status, 'active') = 'active'
     GROUP BY s.sale_date
     ORDER BY s.sale_date ASC
   `, [days]);
@@ -29,7 +29,7 @@ export async function getPlatformChartData() {
       COUNT(DISTINCT s.id)::int AS count
     FROM ${T.sales} s
     JOIN ${T.saleItems} si ON si.sale_id = s.id
-    WHERE s.sale_date >= $1
+    WHERE s.sale_date >= $1 AND COALESCE(s.status, 'active') = 'active'
     GROUP BY s.platform
     ORDER BY revenue DESC
   `, [monthStartStr]);

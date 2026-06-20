@@ -20,7 +20,7 @@ interface Variant {
   current_stock: number;
 }
 
-const REASONS = ["Damaged", "Lost", "Returned", "Correction", "Giveaway", "Other"];
+const REASONS = ["Damaged", "Lost", "Returned", "Wrong Count", "Giveaway", "Other"];
 
 export function AdjustmentForm({ variants }: { variants: Variant[] }) {
   const router = useRouter();
@@ -43,29 +43,23 @@ export function AdjustmentForm({ variants }: { variants: Variant[] }) {
       setPending(false);
       return;
     }
-
     if (quantityChange === 0) {
       setError("Quantity change cannot be zero");
       setPending(false);
       return;
     }
-
     if (stockAfter < 0) {
-      setError(`Adjustment would result in negative stock. Current: ${currentStock}`);
+      setError(`Correction would result in negative stock. Current: ${currentStock}`);
       setPending(false);
       return;
     }
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+    const formData = new FormData(e.currentTarget);
     const result = await recordAdjustmentAction(null, formData);
     if (result?.success) {
-      toast.success("Stock adjustment recorded");
-      form.reset();
-      setVariantId("");
-      setQuantityChange(0);
+      toast.success("Stock correction recorded");
       setPending(false);
-      router.refresh();
+      router.push("/ledger");
       return;
     }
     if (result && !result.success) {
@@ -76,62 +70,50 @@ export function AdjustmentForm({ variants }: { variants: Variant[] }) {
 
   return (
     <div>
-      <PageHeader title="Stock Adjustment" description="Record damaged, lost, returned, or corrected stock" />
+      <PageHeader title="Stock Correction" description="Fix damaged, lost, returned, or miscounted stock" />
 
       <form onSubmit={handleSubmit} className="max-w-xl">
         {error && <div className="mb-4"><ErrorMessage message={error} /></div>}
 
         <fieldset disabled={pending} className="disabled:opacity-60">
-        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-          <FormGroup>
-            <Label htmlFor="adjustment_date">Adjustment Date *</Label>
-            <Input id="adjustment_date" name="adjustment_date" type="date" required defaultValue={today} />
-          </FormGroup>
-
-          <FormGroup>
-            <Label htmlFor="variant_id">Product / Variant *</Label>
-            <VariantPicker
-              variants={variants}
-              value={variantId}
-              onChange={setVariantId}
-              showStock
-            />
-            <input type="hidden" name="variant_id" value={variantId} required />
-            {variantId && (
-              <p className="mt-2 text-sm font-medium">Current stock: {currentStock}</p>
-            )}
-          </FormGroup>
-
-          <FormGroup>
-            <Label htmlFor="quantity_change">Quantity Change *</Label>
-            <Input id="quantity_change" name="quantity_change" type="number" required
-              value={quantityChange || ""}
-              onChange={(e) => setQuantityChange(parseInt(e.target.value) || 0)}
-              placeholder="Positive to add, negative to remove" />
-            {variantId && quantityChange !== 0 && (
-              <p className={`mt-2 text-sm font-medium ${stockAfter < 0 ? "text-danger" : "text-success"}`}>
-                Stock after adjustment: {stockAfter}
-              </p>
-            )}
-          </FormGroup>
-
-          <FormGroup>
-            <Label htmlFor="reason">Reason *</Label>
-            <Select id="reason" name="reason" required defaultValue="Correction">
-              {REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
-            </Select>
-          </FormGroup>
-
-          <FormGroup>
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea id="notes" name="notes" />
-          </FormGroup>
-        </div>
-
-        <div className="mt-6 flex gap-3">
-          <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Record Adjustment"}</Button>
-          <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-        </div>
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <FormGroup>
+              <Label htmlFor="adjustment_date">Date *</Label>
+              <Input id="adjustment_date" name="adjustment_date" type="date" required defaultValue={today} />
+            </FormGroup>
+            <FormGroup>
+              <Label>Product / Variant *</Label>
+              <VariantPicker variants={variants} value={variantId} onChange={setVariantId} showStock />
+              <input type="hidden" name="variant_id" value={variantId} required />
+              {variantId && <p className="mt-2 text-sm font-medium">Current stock: {currentStock}</p>}
+            </FormGroup>
+            <FormGroup>
+              <Label htmlFor="quantity_change">Quantity Change *</Label>
+              <Input id="quantity_change" name="quantity_change" type="number" required
+                value={quantityChange || ""}
+                onChange={(e) => setQuantityChange(parseInt(e.target.value) || 0)}
+                placeholder="Positive to add, negative to remove" />
+              {variantId && quantityChange !== 0 && (
+                <p className={`mt-2 text-sm font-medium ${stockAfter < 0 ? "text-danger" : "text-success"}`}>
+                  Stock after correction: {stockAfter}
+                </p>
+              )}
+            </FormGroup>
+            <FormGroup>
+              <Label htmlFor="reason">Reason *</Label>
+              <Select id="reason" name="reason" required defaultValue="Wrong Count">
+                {REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
+              </Select>
+            </FormGroup>
+            <FormGroup>
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea id="notes" name="notes" />
+            </FormGroup>
+          </div>
+          <div className="mt-6 flex gap-3">
+            <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Record Correction"}</Button>
+            <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+          </div>
         </fieldset>
       </form>
     </div>

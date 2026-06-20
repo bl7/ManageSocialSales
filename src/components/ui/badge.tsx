@@ -26,10 +26,12 @@ export function MovementBadge({ type }: { type: string }) {
     purchase: "bg-blue-100 text-blue-800",
     sale: "bg-purple-100 text-purple-800",
     adjustment: "bg-orange-100 text-orange-800",
+    sale_void: "bg-red-100 text-red-800",
+    purchase_void: "bg-red-100 text-red-800",
   };
   return (
     <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize", colors[type] || "bg-slate-100")}>
-      {type}
+      {type.replace(/_/g, " ")}
     </span>
   );
 }

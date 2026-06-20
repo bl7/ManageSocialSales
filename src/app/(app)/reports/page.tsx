@@ -11,30 +11,32 @@ import { getSettings } from "@/lib/queries/dashboard";
 import { PageHeader } from "@/components/ui/page";
 import { Card } from "@/components/ui/card";
 import { ReportsFilters } from "@/components/reports/reports-filters";
+import { resolveListDateRange } from "@/lib/date-ranges";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 interface Props {
-  searchParams: Promise<{ dateFrom?: string; dateTo?: string }>;
+  searchParams: Promise<{ dateFrom?: string; dateTo?: string; preset?: string }>;
 }
 
 export default async function ReportsPage({ searchParams }: Props) {
   const params = await searchParams;
+  const { from: dateFrom, to: dateTo } = resolveListDateRange(params);
   const [bestSelling, slowMoving, lowStock, outOfStock, valuation, revenue, profit, settings] =
     await Promise.all([
-      getBestSellingProducts(params.dateFrom, params.dateTo),
+      getBestSellingProducts(dateFrom, dateTo),
       getSlowMovingProducts(),
       getLowStockReport(),
       getOutOfStockReport(),
       getInventoryValuation(),
-      getRevenueReport(params.dateFrom, params.dateTo),
-      getProfitReport(params.dateFrom, params.dateTo),
+      getRevenueReport(dateFrom, dateTo),
+      getProfitReport(dateFrom, dateTo),
       getSettings(),
     ]);
 
   const currency = settings?.currency ?? "Rs.";
   const totalValuation = valuation.reduce((s, r) => s + Number(r.total_value), 0);
   const totalProfit = profit.reduce((s, r) => s + Number(r.estimated_profit), 0);
-  const hasDateFilter = Boolean(params.dateFrom || params.dateTo);
+  const hasDateFilter = Boolean(dateFrom || dateTo);
 
   function ReportTable({ headers, rows }: { headers: string[]; rows: (string | number)[][] }) {
     if (rows.length === 0) return <p className="text-sm text-muted">No data available.</p>;
@@ -62,7 +64,7 @@ export default async function ReportsPage({ searchParams }: Props) {
     <div>
       <PageHeader title="Reports" description="Business insights and inventory analysis" />
 
-      <ReportsFilters dateFrom={params.dateFrom} dateTo={params.dateTo} />
+      <ReportsFilters dateFrom={dateFrom} dateTo={dateTo} />
 
       <div className="grid gap-6">
         <div className="grid gap-6 md:grid-cols-2">

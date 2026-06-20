@@ -1,24 +1,10 @@
-import { notFound } from "next/navigation";
-import { getPaymentMethodById, getPaymentMethodSaleCount } from "@/lib/queries/payment-methods";
-import { PaymentMethodForm } from "@/components/forms/payment-method-form";
+import { redirect } from "next/navigation";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default async function EditPaymentMethodPage({ params }: Props) {
+export default async function PaymentMethodEditRedirect({ params }: Props) {
   const { id } = await params;
-  const [method, saleCount] = await Promise.all([
-    getPaymentMethodById(id),
-    getPaymentMethodSaleCount(id),
-  ]);
-
-  if (!method || !method.is_active) notFound();
-
-  return (
-    <PaymentMethodForm
-      method={{ id: method.id, name: method.name }}
-      saleCount={saleCount}
-    />
-  );
+  redirect(`/settings/payment-methods/${id}/edit`);
 }

@@ -7,6 +7,7 @@ import {
   derivePaymentStatus,
   reserveInvoiceNumberClient,
 } from "@/lib/queries/parties";
+import { todayISODate } from "@/lib/date-ranges";
 
 async function getVariantStockClient(
   client: PoolClient,
@@ -259,5 +260,128 @@ export async function recordAdjustment(
     );
 
     return adjustmentId;
+  });
+}
+
+export async function voidSale(saleId: string, voidReason: string): Promise<void> {
+  return withTransaction(async (client) => {
+    const saleResult = await client.query(
+      `SELECT * FROM ${T.sales} WHERE id = $1 FOR UPDATE`,
+      [saleId]
+    );
+    const sale = saleResult.rows[0];
+    if (!sale) throw new Error("Sale not found");
+    if (sale.status === "voided") throw new Error("Sale is already voided");
+
+    const items = await client.query(
+      `SELECT * FROM ${T.saleItems} WHERE sale_id = $1`,
+      [saleId]
+    );
+
+    for (const item of items.rows) {
+      const currentStock = await getVariantStockClient(client, item.variant_id);
+      const stockAfter = currentStock + item.quantity;
+
+      await client.query(
+        `INSERT INTO ${T.inventoryLedger}
+         (id, variant_id, movement_type, reference_type, reference_id,
+          quantity_change, stock_after, unit_sale_price, notes)
+         VALUES ($1, $2, 'sale_void', 'sale_void', $3, $4, $5, $6, $7)`,
+        [
+          uuidv4(),
+          item.variant_id,
+          saleId,
+          item.quantity,
+          stockAfter,
+          item.unit_sale_price,
+          `Void sale: ${voidReason}`,
+        ]
+      );
+    }
+
+    const totalAmount = Number(sale.total_amount);
+    const amountPaid = Number(sale.amount_paid ?? 0);
+    const creditDue = Math.max(0, totalAmount - amountPaid);
+
+    if (sale.party_id && creditDue > 0) {
+      await addPartyLedgerEntryClient(client, {
+        partyId: sale.party_id,
+        entryDate: todayISODate(),
+        entryType: "sale_void",
+        amount: creditDue,
+        referenceType: "sale",
+        referenceId: saleId,
+        notes: `Void sale: ${voidReason}`,
+      });
+    }
+
+    await client.query(
+      `UPDATE ${T.sales} SET status = 'voided', voided_at = NOW(), void_reason = $1 WHERE id = $2`,
+      [voidReason, saleId]
+    );
+  });
+}
+
+export async function voidPurchase(purchaseId: string, voidReason: string): Promise<void> {
+  return withTransaction(async (client) => {
+    const purchaseResult = await client.query(
+      `SELECT * FROM ${T.purchases} WHERE id = $1 FOR UPDATE`,
+      [purchaseId]
+    );
+    const purchase = purchaseResult.rows[0];
+    if (!purchase) throw new Error("Purchase not found");
+    if (purchase.status === "voided") throw new Error("Purchase is already voided");
+
+    const items = await client.query(
+      `SELECT * FROM ${T.purchaseItems} WHERE purchase_id = $1`,
+      [purchaseId]
+    );
+
+    for (const item of items.rows) {
+      const currentStock = await getVariantStockClient(client, item.variant_id);
+      const stockAfter = currentStock - item.quantity;
+      if (stockAfter < 0) {
+        throw new Error(
+          `Cannot void purchase: would make stock negative for a variant. Available: ${currentStock}, need to remove: ${item.quantity}`
+        );
+      }
+
+      await client.query(
+        `INSERT INTO ${T.inventoryLedger}
+         (id, variant_id, movement_type, reference_type, reference_id,
+          quantity_change, stock_after, unit_cost, notes)
+         VALUES ($1, $2, 'purchase_void', 'purchase_void', $3, $4, $5, $6, $7)`,
+        [
+          uuidv4(),
+          item.variant_id,
+          purchaseId,
+          -item.quantity,
+          stockAfter,
+          item.unit_cost,
+          `Void purchase: ${voidReason}`,
+        ]
+      );
+    }
+
+    const totalAmount = Number(purchase.total_amount);
+    const amountPaid = Number(purchase.amount_paid ?? 0);
+    const creditDue = Math.max(0, totalAmount - amountPaid);
+
+    if (purchase.party_id && creditDue > 0) {
+      await addPartyLedgerEntryClient(client, {
+        partyId: purchase.party_id,
+        entryDate: todayISODate(),
+        entryType: "purchase_void",
+        amount: creditDue,
+        referenceType: "purchase",
+        referenceId: purchaseId,
+        notes: `Void purchase: ${voidReason}`,
+      });
+    }
+
+    await client.query(
+      `UPDATE ${T.purchases} SET status = 'voided', voided_at = NOW(), void_reason = $1 WHERE id = $2`,
+      [voidReason, purchaseId]
+    );
   });
 }

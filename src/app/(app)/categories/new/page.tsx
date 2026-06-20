@@ -1,5 +1,5 @@
-import { CategoryForm } from "@/components/forms/category-form";
+import { redirect } from "next/navigation";
 
-export default function NewCategoryPage() {
-  return <CategoryForm />;
+export default function CategoriesNewRedirect() {
+  redirect("/settings/categories/new");
 }

@@ -88,7 +88,7 @@ export async function getDashboardStats() {
       COALESCE(SUM(si.line_total), 0)::numeric AS revenue
     FROM ${T.sales} s
     JOIN ${T.saleItems} si ON si.sale_id = s.id
-    WHERE s.sale_date >= $1
+    WHERE s.sale_date >= $1 AND COALESCE(s.status, 'active') = 'active'
   `, [monthStartStr]);
 
   const profit = await queryOne<{ profit: string }>(`
@@ -98,7 +98,7 @@ export async function getDashboardStats() {
     FROM ${T.sales} s
     JOIN ${T.saleItems} si ON si.sale_id = s.id
     JOIN ${T.productVariants} pv ON pv.id = si.variant_id
-    WHERE s.sale_date >= $1
+    WHERE s.sale_date >= $1 AND COALESCE(s.status, 'active') = 'active'
   `, [monthStartStr]);
 
   const [receivables, payables] = await Promise.all([

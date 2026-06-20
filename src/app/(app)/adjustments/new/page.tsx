@@ -1,7 +1,5 @@
-import { getActiveVariantsForSelect } from "@/lib/queries/products";
-import { AdjustmentForm } from "@/components/forms/adjustment-form";
+import { redirect } from "next/navigation";
 
-export default async function NewAdjustmentPage() {
-  const variants = await getActiveVariantsForSelect();
-  return <AdjustmentForm variants={variants} />;
+export default function AdjustmentsRedirect() {
+  redirect("/stock-corrections/new");
 }

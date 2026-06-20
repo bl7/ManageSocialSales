@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getPurchasesSummary, getPurchasesList } from "@/lib/queries/purchases";
 import { getSettings } from "@/lib/queries/dashboard";
-import { getDateRange, toISODate } from "@/lib/date-ranges";
+import { resolveListDateRange } from "@/lib/date-ranges";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { PeriodFilters } from "@/components/ui/period-filters";
@@ -14,19 +14,12 @@ interface Props {
 }
 
 function resolveDates(params: { dateFrom?: string; dateTo?: string; preset?: string }) {
-  if (params.preset) {
-    const range = getDateRange(params.preset);
-    if (range) return range;
-  }
-  if (params.dateFrom && params.dateTo) return { from: params.dateFrom, to: params.dateTo };
-  const today = toISODate(new Date());
-  return { from: today, to: today };
+  return resolveListDateRange(params);
 }
 
 export default async function PurchasesPage({ searchParams }: Props) {
   const params = await searchParams;
   const { from: dateFrom, to: dateTo } = resolveDates(params);
-
   const [summary, purchases, settings] = await Promise.all([
     getPurchasesSummary(dateFrom, dateTo),
     getPurchasesList(dateFrom, dateTo),
@@ -41,7 +34,7 @@ export default async function PurchasesPage({ searchParams }: Props) {
         <Link href="/purchases/new"><Button>Record Purchase</Button></Link>
       </PageHeader>
 
-      <PeriodFilters dateFrom={dateFrom} dateTo={dateTo} />
+      <PeriodFilters dateFrom={dateFrom ?? ""} dateTo={dateTo ?? ""} />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <Card>

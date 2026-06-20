@@ -1,23 +1,18 @@
 import { query } from "@/lib/db";
 import { T } from "@/lib/tables";
+import { ACTIVE_SALE } from "@/lib/query-filters";
 
-export async function getBestSellingProducts(dateFrom?: string, dateTo?: string) {
-  const conditions: string[] = [];
+function saleWhere(dateFrom?: string, dateTo?: string) {
+  const conditions: string[] = [ACTIVE_SALE];
   const params: unknown[] = [];
   let idx = 1;
+  if (dateFrom) { conditions.push(`s.sale_date >= $${idx}`); params.push(dateFrom); idx++; }
+  if (dateTo) { conditions.push(`s.sale_date <= $${idx}`); params.push(dateTo); idx++; }
+  return { where: `WHERE ${conditions.join(" AND ")}`, params };
+}
 
-  if (dateFrom) {
-    conditions.push(`s.sale_date >= $${idx}`);
-    params.push(dateFrom);
-    idx++;
-  }
-  if (dateTo) {
-    conditions.push(`s.sale_date <= $${idx}`);
-    params.push(dateTo);
-    idx++;
-  }
-
-  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+export async function getBestSellingProducts(dateFrom?: string, dateTo?: string) {
+  const { where, params } = saleWhere(dateFrom, dateTo);
 
   return query(`
     SELECT
@@ -40,8 +35,11 @@ export async function getBestSellingProducts(dateFrom?: string, dateTo?: string)
 export async function getSlowMovingProducts() {
   return query(`
     WITH sold AS (
-      SELECT variant_id, COALESCE(SUM(quantity), 0)::int AS total_sold
-      FROM ${T.saleItems} GROUP BY variant_id
+      SELECT si.variant_id, COALESCE(SUM(si.quantity), 0)::int AS total_sold
+      FROM ${T.saleItems} si
+      JOIN ${T.sales} s ON s.id = si.sale_id
+      WHERE COALESCE(s.status, 'active') = 'active'
+      GROUP BY si.variant_id
     ),
     stock AS (
       SELECT variant_id, COALESCE(SUM(quantity_change), 0)::int AS current_stock
@@ -126,22 +124,7 @@ export async function getInventoryValuation() {
 }
 
 export async function getRevenueReport(dateFrom?: string, dateTo?: string) {
-  const conditions: string[] = [];
-  const params: unknown[] = [];
-  let idx = 1;
-
-  if (dateFrom) {
-    conditions.push(`s.sale_date >= $${idx}`);
-    params.push(dateFrom);
-    idx++;
-  }
-  if (dateTo) {
-    conditions.push(`s.sale_date <= $${idx}`);
-    params.push(dateTo);
-    idx++;
-  }
-
-  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const { where, params } = saleWhere(dateFrom, dateTo);
 
   const summary = await query(`
     SELECT
@@ -170,22 +153,7 @@ export async function getRevenueReport(dateFrom?: string, dateTo?: string) {
 }
 
 export async function getProfitReport(dateFrom?: string, dateTo?: string) {
-  const conditions: string[] = [];
-  const params: unknown[] = [];
-  let idx = 1;
-
-  if (dateFrom) {
-    conditions.push(`s.sale_date >= $${idx}`);
-    params.push(dateFrom);
-    idx++;
-  }
-  if (dateTo) {
-    conditions.push(`s.sale_date <= $${idx}`);
-    params.push(dateTo);
-    idx++;
-  }
-
-  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const { where, params } = saleWhere(dateFrom, dateTo);
 
   return query(`
     SELECT

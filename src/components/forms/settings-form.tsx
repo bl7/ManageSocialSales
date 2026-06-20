@@ -6,7 +6,7 @@ import { updateSettingsAction } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
+import { ErrorMessage, FormGroup, Label } from "@/components/ui/page";
 
 interface SettingsFormProps {
   settings: {
@@ -19,25 +19,44 @@ interface SettingsFormProps {
     logo_url?: string | null;
     invoice_prefix?: string | null;
   };
+  section: "profile" | "invoice" | "preferences";
 }
 
-export function SettingsForm({ settings }: SettingsFormProps) {
+export function SettingsForm({ settings, section }: SettingsFormProps) {
   const [state, action, pending] = useActionState(updateSettingsAction, null);
 
   useEffect(() => {
     if (state?.success) toast.success("Settings saved successfully");
   }, [state]);
 
+  const hidden = (name: string, value: string | number) => (
+    <input key={name} type="hidden" name={name} value={value} />
+  );
+
   return (
-    <div>
-      <PageHeader title="Settings" description="Business profile and preferences" />
+    <form action={action} className="max-w-lg">
+      {state && !state.success && <div className="mb-4"><ErrorMessage message={state.error} /></div>}
 
-      <form action={action} className="max-w-lg">
-        {state && !state.success && <div className="mb-4"><ErrorMessage message={state.error} /></div>}
+      {section !== "profile" && (
+        <>
+          {hidden("business_name", settings.business_name)}
+          {hidden("business_email", settings.business_email || "")}
+          {hidden("phone", settings.phone || "")}
+          {hidden("address", settings.address || "")}
+          {hidden("logo_url", settings.logo_url || "")}
+        </>
+      )}
+      {section !== "invoice" && hidden("invoice_prefix", settings.invoice_prefix || "INV-")}
+      {section !== "preferences" && (
+        <>
+          {hidden("currency", settings.currency)}
+          {hidden("low_stock_default", settings.low_stock_default)}
+        </>
+      )}
 
-        <div className="space-y-6">
-          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <h3 className="font-semibold">Business Profile</h3>
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        {section === "profile" && (
+          <>
             <FormGroup>
               <Label htmlFor="business_name">Business Name</Label>
               <Input id="business_name" name="business_name" required defaultValue={settings.business_name} />
@@ -58,34 +77,31 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               <Label htmlFor="logo_url">Logo URL</Label>
               <Input id="logo_url" name="logo_url" type="url" defaultValue={settings.logo_url || ""} placeholder="https://..." />
             </FormGroup>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <h3 className="font-semibold">Invoicing</h3>
-            <FormGroup>
-              <Label htmlFor="invoice_prefix">Invoice Number Prefix</Label>
-              <Input id="invoice_prefix" name="invoice_prefix" defaultValue={settings.invoice_prefix || "INV-"} />
-            </FormGroup>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <h3 className="font-semibold">Preferences</h3>
+          </>
+        )}
+        {section === "invoice" && (
+          <FormGroup>
+            <Label htmlFor="invoice_prefix">Invoice Number Prefix</Label>
+            <Input id="invoice_prefix" name="invoice_prefix" defaultValue={settings.invoice_prefix || "INV-"} />
+          </FormGroup>
+        )}
+        {section === "preferences" && (
+          <>
             <FormGroup>
               <Label htmlFor="currency">Currency Symbol</Label>
               <Input id="currency" name="currency" required defaultValue={settings.currency} placeholder="Rs." />
             </FormGroup>
             <FormGroup>
               <Label htmlFor="low_stock_default">Default Low Stock Threshold</Label>
-              <Input id="low_stock_default" name="low_stock_default" type="number" min="0" required
-                defaultValue={settings.low_stock_default} />
+              <Input id="low_stock_default" name="low_stock_default" type="number" min="0" required defaultValue={settings.low_stock_default} />
             </FormGroup>
-          </div>
-        </div>
+          </>
+        )}
+      </div>
 
-        <div className="mt-6">
-          <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save Settings"}</Button>
-        </div>
-      </form>
-    </div>
+      <div className="mt-6">
+        <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save"}</Button>
+      </div>
+    </form>
   );
 }

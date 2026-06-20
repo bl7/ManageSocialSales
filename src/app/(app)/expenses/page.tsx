@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getExpenses, getExpensesTotal, getExpenseCategories } from "@/lib/queries/expenses";
 import { getSettings } from "@/lib/queries/dashboard";
-import { getDateRange, toISODate } from "@/lib/date-ranges";
+import { resolveListDateRange } from "@/lib/date-ranges";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { PeriodFilters } from "@/components/ui/period-filters";
@@ -15,14 +15,7 @@ interface Props {
 }
 
 function resolveDates(params: { dateFrom?: string; dateTo?: string; preset?: string }) {
-  if (params.preset) {
-    const range = getDateRange(params.preset);
-    if (range) return range;
-  }
-  if (params.dateFrom && params.dateTo) return { from: params.dateFrom, to: params.dateTo };
-  const today = new Date();
-  const from = new Date(today.getFullYear(), today.getMonth(), 1);
-  return { from: toISODate(from), to: toISODate(today) };
+  return resolveListDateRange(params);
 }
 
 export default async function ExpensesPage({ searchParams }: Props) {
@@ -48,7 +41,7 @@ export default async function ExpensesPage({ searchParams }: Props) {
         <Link href="/expenses?new=1"><Button>Record Expense</Button></Link>
       </PageHeader>
 
-      <PeriodFilters dateFrom={dateFrom} dateTo={dateTo} basePath="/expenses" />
+      <PeriodFilters dateFrom={dateFrom ?? ""} dateTo={dateTo ?? ""} basePath="/expenses" />
 
       <Card className="mb-6 max-w-xs">
         <CardTitle>Total Expenses</CardTitle>

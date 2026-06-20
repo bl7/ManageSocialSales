@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getSalesSummary, getSalesList } from "@/lib/queries/sales";
 import { getSettings } from "@/lib/queries/dashboard";
-import { getDateRange } from "@/lib/date-ranges";
+import { resolveListDateRange } from "@/lib/date-ranges";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { SalesFilters } from "@/components/sales/sales-filters";
@@ -14,15 +14,7 @@ interface Props {
 }
 
 function resolveDates(params: { dateFrom?: string; dateTo?: string; preset?: string; range?: string }) {
-  if (params.range === "all") return { from: undefined, to: undefined };
-  if (params.preset) {
-    const range = getDateRange(params.preset);
-    if (range) return { from: range.from, to: range.to };
-  }
-  if (params.dateFrom && params.dateTo) {
-    return { from: params.dateFrom, to: params.dateTo };
-  }
-  return { from: undefined, to: undefined };
+  return resolveListDateRange(params, { allowAll: true });
 }
 
 export default async function SalesPage({ searchParams }: Props) {
@@ -68,8 +60,13 @@ export default async function SalesPage({ searchParams }: Props) {
           </DataTableHead>
           <DataTableBody>
             {sales.map((s) => (
-              <tr key={s.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 whitespace-nowrap">{formatDate(s.sale_date)}</td>
+              <tr key={s.id} className={`hover:bg-slate-50 ${s.status === "voided" ? "opacity-60" : ""}`}>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {formatDate(s.sale_date)}
+                  {s.status === "voided" && (
+                    <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700">voided</span>
+                  )}
+                </td>
                 <td className="px-4 py-3">{s.platform || "—"}</td>
                 <td className="px-4 py-3">{s.item_count}</td>
                 <td className="px-4 py-3">{s.units}</td>
