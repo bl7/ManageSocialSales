@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shree Inventory
 
-## Getting Started
+Internal inventory management web application for a small Instagram-based clothing business. Track products, purchases, sales, stock adjustments, and view complete stock movement history.
 
-First, run the development server:
+## Tech Stack
+
+- Next.js (App Router) + TypeScript
+- PostgreSQL with `pg` (node-postgres)
+- Tailwind CSS
+- bcrypt + JWT session cookies
+
+## Prerequisites
+
+- Node.js 18+
+- PostgreSQL 14+
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment
+
+Copy the example env file and update values:
+
+```bash
+cp .env.example .env
+```
+
+Required variables:
+
+| Variable | Description |
+|----------|-------------|
+| `PGHOST` | PostgreSQL host |
+| `PGPORT` | PostgreSQL port (default 5432) |
+| `PGDATABASE` | Database name |
+| `PGUSER` | Database username |
+| `PGPASSWORD` | Database password |
+| `PGSSLMODE` | `disable`, `prefer`, or `require` |
+| `JWT_SECRET` | Secret for signing session tokens |
+| `SESSION_SECRET` | Fallback secret (optional if JWT_SECRET set) |
+| `NODE_ENV` | `development` or `production` |
+| `ADMIN_EMAIL` | Login email for seed script |
+| `ADMIN_PASSWORD` | Login password for seed script |
+
+Alternatively, set `DATABASE_URL` instead of the `PG*` variables.
+
+All app tables use the `bij_` prefix (e.g. `bij_products`) so they can share a database with other projects.
+
+### 3. Run migrations
+
+```bash
+npm run db:migrate
+```
+
+### 4. Seed sample data
+
+Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`, then:
+
+```bash
+npm run db:seed
+```
+
+### 5. Start development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and sign in with your admin credentials.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run db:migrate` | Run database migrations |
+| `npm run db:seed` | Seed admin user and sample data |
 
-## Learn More
+## Pages
 
-To learn more about Next.js, take a look at the following resources:
+- **Login** — Secure single-account authentication
+- **Dashboard** — Inventory and sales overview
+- **Products** — Product/variant list with search and filters
+- **Product Detail** — Variants, stock, recent movements
+- **Add/Edit Product** — Product and variant management
+- **Record Purchase** — Incoming stock
+- **Record Sale** — Outgoing stock (Instagram, WhatsApp, etc.)
+- **Stock Adjustment** — Damaged, lost, returned, corrections
+- **Stock Ledger** — Complete inventory movement history
+- **Reports** — Best sellers, slow movers, valuation, revenue, profit
+- **Settings** — Business name, currency, low stock threshold
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Core Inventory Rules
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Stock is **never edited directly**. All changes go through:
 
-## Deploy on Vercel
+1. **Purchase** — increases stock
+2. **Sale** — decreases stock (rejected if insufficient)
+3. **Stock Adjustment** — positive or negative (rejected if result is negative)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Every movement creates a permanent `inventory_ledger` entry with `stock_after` calculated at transaction time.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Production Notes
+
+- Set `NODE_ENV=production`
+- Use a strong `JWT_SECRET` (32+ random characters)
+- Use a strong `ADMIN_PASSWORD`
+- Serve over HTTPS (required for secure cookies)
+- Run migrations before deployment: `npm run db:migrate`
+- Back up your PostgreSQL database regularly
+- Never commit `.env` or expose `DATABASE_URL`
+
+## Security Checklist
+
+- [ ] Change `JWT_SECRET` before production
+- [ ] Use strong `ADMIN_PASSWORD`
+- [ ] Use HTTPS in production
+- [ ] Secure cookies enabled automatically in production
+- [ ] Never expose database credentials
+- [ ] Run migrations before deployment
+- [ ] Back up database regularly
