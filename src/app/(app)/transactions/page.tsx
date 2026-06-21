@@ -7,11 +7,15 @@ import {
   getTransactionLink,
 } from "@/lib/queries/accounts";
 import { getSettings } from "@/lib/queries/dashboard";
+import { getInvestors } from "@/lib/queries/investors";
 import { resolveListDateRange } from "@/lib/date-ranges";
 import { PageHeader, EmptyState, ListPage, ListFilterBar } from "@/components/ui/page";
+import { Button } from "@/components/ui/button";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
 import { TransactionSummaryCards } from "@/components/transactions/transaction-summary-cards";
+import { TransferForm } from "@/components/forms/transfer-form";
+import { WithdrawalForm } from "@/components/forms/withdrawal-form";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -22,11 +26,35 @@ interface Props {
     preset?: string;
     account_id?: string;
     direction?: string;
+    transfer?: string;
+    withdraw?: string;
   }>;
 }
 
 export default async function TransactionsPage({ searchParams }: Props) {
   const params = await searchParams;
+
+  if (params.transfer === "1") {
+    const accounts = await getAccounts();
+    const settings = await getSettings();
+    return (
+      <TransferForm
+        accounts={accounts}
+        currency={settings?.currency ?? "Rs."}
+      />
+    );
+  }
+
+  if (params.withdraw === "1") {
+    const [accounts, investors] = await Promise.all([getAccounts(), getInvestors()]);
+    return (
+      <WithdrawalForm
+        accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
+        investors={investors.map((i) => ({ id: i.id, name: i.name }))}
+      />
+    );
+  }
+
   const { from: dateFrom, to: dateTo } = resolveListDateRange(params);
 
   const direction =
@@ -51,7 +79,16 @@ export default async function TransactionsPage({ searchParams }: Props) {
       <PageHeader
         title="Transactions"
         description="All money in and out across Cash, Bank, eSewa, and Khalti"
-      />
+      >
+        <div className="flex flex-wrap gap-2">
+          <Link href="/transactions?transfer=1">
+            <Button variant="outline">Transfer</Button>
+          </Link>
+          <Link href="/transactions?withdraw=1">
+            <Button variant="outline">Withdraw Profit</Button>
+          </Link>
+        </div>
+      </PageHeader>
 
       <ListFilterBar>
         <TransactionFilters

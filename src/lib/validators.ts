@@ -97,13 +97,21 @@ export const expenseSchema = z.object({
   notes: z.string().optional(),
 });
 
+export const investorSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  phone: z.string().optional(),
+  email: z.string().email("Invalid email").optional().or(z.literal("")),
+  address: z.string().optional(),
+  notes: z.string().optional(),
+});
+
 export const investmentAllocationSchema = z.object({
   account_id: z.string().uuid("Select an account"),
   amount: z.coerce.number().positive("Amount must be positive"),
 });
 
 export const investmentSchema = z.object({
-  investor_name: z.string().min(1, "Investor name is required"),
+  investor_id: z.string().uuid("Select an investor"),
   investment_date: z.string().min(1, "Date is required"),
   notes: z.string().optional(),
   allocations: z.array(investmentAllocationSchema).min(1, "Add at least one account split"),
@@ -114,6 +122,25 @@ export const investmentSchema = z.object({
   },
   { message: "Each account can only be used once per investment" }
 );
+
+export const accountTransferSchema = z.object({
+  from_account_id: z.string().uuid("Select source account"),
+  to_account_id: z.string().uuid("Select destination account"),
+  amount: z.coerce.number().positive("Amount must be positive"),
+  transfer_date: z.string().min(1, "Date is required"),
+  notes: z.string().optional(),
+}).refine(
+  (data) => data.from_account_id !== data.to_account_id,
+  { message: "Source and destination accounts must be different", path: ["to_account_id"] }
+);
+
+export const profitWithdrawalSchema = z.object({
+  investor_id: z.string().uuid().optional().or(z.literal("")),
+  account_id: z.string().uuid("Select an account"),
+  amount: z.coerce.number().positive("Amount must be positive"),
+  withdrawal_date: z.string().min(1, "Date is required"),
+  notes: z.string().optional(),
+});
 
 export const productCategorySchema = z.object({
   name: z.string().min(1, "Category name is required").max(100),

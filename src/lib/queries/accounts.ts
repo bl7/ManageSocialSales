@@ -11,8 +11,12 @@ export type AccountEntryType =
   | "payment_in"
   | "payment_out"
   | "investment"
+  | "investment_void"
   | "sale_void"
-  | "purchase_void";
+  | "purchase_void"
+  | "transfer_in"
+  | "transfer_out"
+  | "profit_withdrawal";
 
 export interface AccountRow {
   id: string;
@@ -190,8 +194,12 @@ const ENTRY_TYPE_LABELS: Record<AccountEntryType, string> = {
   payment_in: "Payment in",
   payment_out: "Payment out",
   investment: "Investment",
+  investment_void: "Investment void",
   sale_void: "Sale void",
   purchase_void: "Purchase void",
+  transfer_in: "Transfer in",
+  transfer_out: "Transfer out",
+  profit_withdrawal: "Profit withdrawal",
 };
 
 export function getAccountEntryLabel(entryType: string): string {
@@ -337,6 +345,8 @@ export function getTransactionLink(
   if (referenceType === "purchase") return `/purchases/${referenceId}`;
   if (referenceType === "expense") return "/expenses";
   if (referenceType === "investment") return "/investment";
+  if (referenceType === "transfer") return "/transactions";
+  if (referenceType === "profit_withdrawal") return "/transactions";
   if (referenceType === "payment") return null;
   return null;
 }

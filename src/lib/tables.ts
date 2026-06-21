@@ -16,9 +16,12 @@ export const T = {
   expenseCategories: "bij_expense_categories",
   expenses: "bij_expenses",
   investments: "bij_investments",
+  investors: "bij_investors",
   productCategories: "bij_product_categories",
   salePaymentMethods: "bij_sale_payment_methods",
   accounts: "bij_accounts",
   accountLedger: "bij_account_ledger",
   investmentAllocations: "bij_investment_allocations",
+  accountTransfers: "bij_account_transfers",
+  profitWithdrawals: "bij_profit_withdrawals",
 } as const;
