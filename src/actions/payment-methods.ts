@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { revalidatePath } from "next/cache";
 import { query } from "@/lib/db";
 import { T } from "@/lib/tables";
+import { getDefaultCashAccountId } from "@/lib/queries/accounts";
 import { requireUser } from "@/actions/auth";
 import { salePaymentMethodSchema, formatZodErrors } from "@/lib/validators";
 import type { ActionResult } from "@/actions/auth";
@@ -26,9 +27,10 @@ export async function quickCreatePaymentMethodAction(
     if (existing[0]) return { id: existing[0].id, name: existing[0].name };
 
     const id = uuidv4();
+    const cashAccountId = await getDefaultCashAccountId();
     await query(
-      `INSERT INTO ${T.salePaymentMethods} (id, name) VALUES ($1, $2)`,
-      [id, parsed.data.name]
+      `INSERT INTO ${T.salePaymentMethods} (id, name, account_id) VALUES ($1, $2, $3)`,
+      [id, parsed.data.name, cashAccountId]
     );
     revalidatePath("/payment-methods");
     revalidatePath("/sales/new");
@@ -45,16 +47,21 @@ export async function savePaymentMethodAction(
   await requireUser();
 
   const methodId = formData.get("method_id") as string | null;
-  const parsed = salePaymentMethodSchema.safeParse({ name: formData.get("name") });
+  const parsed = salePaymentMethodSchema.safeParse({
+    name: formData.get("name"),
+    account_id: formData.get("account_id") || undefined,
+  });
   if (!parsed.success) {
     return { success: false, error: formatZodErrors(parsed.error) };
   }
 
   try {
+    const accountId = parsed.data.account_id || null;
+
     if (methodId) {
       await query(
-        `UPDATE ${T.salePaymentMethods} SET name = $1, updated_at = NOW() WHERE id = $2`,
-        [parsed.data.name, methodId]
+        `UPDATE ${T.salePaymentMethods} SET name = $1, account_id = $2, updated_at = NOW() WHERE id = $3`,
+        [parsed.data.name, accountId, methodId]
       );
       revalidatePath("/payment-methods");
       revalidatePath("/sales/new");
@@ -62,9 +69,10 @@ export async function savePaymentMethodAction(
     }
 
     const id = uuidv4();
+    const defaultAccountId = accountId || (await getDefaultCashAccountId());
     await query(
-      `INSERT INTO ${T.salePaymentMethods} (id, name) VALUES ($1, $2)`,
-      [id, parsed.data.name]
+      `INSERT INTO ${T.salePaymentMethods} (id, name, account_id) VALUES ($1, $2, $3)`,
+      [id, parsed.data.name, defaultAccountId]
     );
     revalidatePath("/payment-methods");
     revalidatePath("/sales/new");

@@ -34,6 +34,7 @@ export const purchaseSchema = z.object({
   purchase_date: z.string().min(1, "Date is required"),
   supplier: z.string().optional(),
   party_id: z.string().uuid().optional().or(z.literal("")),
+  account_id: z.string().uuid().optional().or(z.literal("")),
   amount_paid: z.coerce.number().min(0).optional(),
   due_date: z.string().optional(),
   notes: z.string().optional(),
@@ -60,6 +61,13 @@ export const saleSchema = z.object({
 
 export const salePaymentMethodSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
+  account_id: z.string().uuid().optional().or(z.literal("")),
+});
+
+export const accountSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  account_type: z.enum(["cash", "bank", "digital"]),
+  opening_balance: z.coerce.number().default(0),
 });
 
 export const partySchema = z.object({
@@ -76,7 +84,7 @@ export const paymentSchema = z.object({
   payment_date: z.string().min(1, "Date is required"),
   amount: z.coerce.number().positive("Amount must be positive"),
   direction: z.enum(["received", "paid"]),
-  payment_method: z.string().default("cash"),
+  account_id: z.string().uuid("Select an account"),
   notes: z.string().optional(),
 });
 
@@ -85,16 +93,27 @@ export const expenseSchema = z.object({
   category_id: z.string().uuid("Select a category"),
   amount: z.coerce.number().positive("Amount must be positive"),
   party_id: z.string().uuid().optional().or(z.literal("")),
-  payment_method: z.string().default("cash"),
+  account_id: z.string().uuid("Select an account"),
   notes: z.string().optional(),
+});
+
+export const investmentAllocationSchema = z.object({
+  account_id: z.string().uuid("Select an account"),
+  amount: z.coerce.number().positive("Amount must be positive"),
 });
 
 export const investmentSchema = z.object({
   investor_name: z.string().min(1, "Investor name is required"),
   investment_date: z.string().min(1, "Date is required"),
-  amount: z.coerce.number().positive("Amount must be positive"),
   notes: z.string().optional(),
-});
+  allocations: z.array(investmentAllocationSchema).min(1, "Add at least one account split"),
+}).refine(
+  (data) => {
+    const ids = data.allocations.map((a) => a.account_id);
+    return new Set(ids).size === ids.length;
+  },
+  { message: "Each account can only be used once per investment" }
+);
 
 export const productCategorySchema = z.object({
   name: z.string().min(1, "Category name is required").max(100),

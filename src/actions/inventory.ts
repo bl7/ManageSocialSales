@@ -63,8 +63,12 @@ export async function recordPurchaseAction(
         partyId: parseOptionalUuid(formData.get("party_id")),
         amountPaid: parsed.data.amount_paid,
         dueDate: parsed.data.due_date,
+        accountId: parseOptionalUuid(formData.get("account_id")),
       }
     );
+    revalidatePath("/purchases");
+    revalidatePath("/dashboard");
+    revalidatePath("/transactions");
     return { success: true };
   } catch {
     return { success: false, error: "Failed to record purchase. Please try again." };
@@ -118,6 +122,9 @@ export async function recordSaleAction(
         dueDate: parsed.data.due_date,
       }
     );
+    revalidatePath("/sales");
+    revalidatePath("/dashboard");
+    revalidatePath("/transactions");
     return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "";
@@ -137,6 +144,7 @@ export async function voidSaleAction(saleId: string, voidReason: string): Promis
     revalidatePath("/ledger");
     revalidatePath("/reports");
     revalidatePath("/dashboard");
+    revalidatePath("/transactions");
     return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "";
@@ -156,6 +164,7 @@ export async function voidPurchaseAction(purchaseId: string, voidReason: string)
     revalidatePath("/ledger");
     revalidatePath("/reports");
     revalidatePath("/dashboard");
+    revalidatePath("/transactions");
     return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "";

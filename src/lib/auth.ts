@@ -5,7 +5,7 @@ import { queryOne } from "./db";
 import { T } from "./tables";
 import type { AppUser } from "@/types";
 
-const SESSION_COOKIE = "shree_session";
+const SESSION_COOKIE = "counter_session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 function getJwtSecret(): Uint8Array {

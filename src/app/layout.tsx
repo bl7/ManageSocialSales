@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { AppProviders } from "@/components/providers/app-providers";
+import { PLATFORM_NAME, PLATFORM_TAGLINE } from "@/lib/branding";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
@@ -7,8 +8,8 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 
 export const metadata: Metadata = {
-  title: "Shree Inventory",
-  description: "Business inventory management for Shree clothing",
+  title: PLATFORM_NAME,
+  description: PLATFORM_TAGLINE,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

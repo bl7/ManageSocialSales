@@ -20,7 +20,7 @@ async function testSaveProductFlow() {
     await pool.query(
       `INSERT INTO ${T.products} (id, name, sku, category, brand, supplier, description)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [productId, "Flow Test Product", sku, "Test", "Shree", null, null]
+      [productId, "Flow Test Product", sku, "Test", "Counter", null, null]
     );
     for (const v of variants) {
       await pool.query(

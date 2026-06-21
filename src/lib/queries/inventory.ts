@@ -7,6 +7,11 @@ import {
   derivePaymentStatus,
   reserveInvoiceNumberClient,
 } from "@/lib/queries/parties";
+import {
+  addAccountLedgerEntryClient,
+  resolveAccountIdForSaleClient,
+  resolveAccountIdForOutflowClient,
+} from "@/lib/queries/accounts";
 import { todayISODate } from "@/lib/date-ranges";
 
 async function getVariantStockClient(
@@ -31,6 +36,7 @@ export interface PurchaseOptions {
   partyId?: string;
   amountPaid?: number;
   dueDate?: string;
+  accountId?: string;
 }
 
 export async function recordPurchase(
@@ -51,11 +57,12 @@ export async function recordPurchase(
     const amountPaid = options.amountPaid ?? totalAmount;
     const paymentStatus = derivePaymentStatus(totalAmount, amountPaid);
     const creditDue = Math.max(0, totalAmount - amountPaid);
+    const accountId = await resolveAccountIdForOutflowClient(client, options.accountId, amountPaid);
 
     await client.query(
       `INSERT INTO ${T.purchases}
-       (id, purchase_date, supplier, party_id, notes, total_amount, payment_status, amount_paid, due_date)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+       (id, purchase_date, supplier, party_id, notes, total_amount, payment_status, amount_paid, due_date, account_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         purchaseId,
         purchaseDate,
@@ -66,6 +73,7 @@ export async function recordPurchase(
         paymentStatus,
         amountPaid,
         options.dueDate || null,
+        accountId,
       ]
     );
 
@@ -104,6 +112,18 @@ export async function recordPurchase(
         entryDate: purchaseDate,
         entryType: "purchase",
         amount: creditDue,
+        referenceType: "purchase",
+        referenceId: purchaseId,
+        notes: notes || undefined,
+      });
+    }
+
+    if (accountId && amountPaid > 0) {
+      await addAccountLedgerEntryClient(client, {
+        accountId,
+        entryDate: purchaseDate,
+        entryType: "purchase_paid",
+        amount: -amountPaid,
         referenceType: "purchase",
         referenceId: purchaseId,
         notes: notes || undefined,
@@ -158,6 +178,7 @@ export async function recordSale(
     const paymentStatus = derivePaymentStatus(totalAmount, amountPaid);
     const creditDue = Math.max(0, totalAmount - amountPaid);
     const invoiceNumber = await reserveInvoiceNumberClient(client);
+    const accountId = await resolveAccountIdForSaleClient(client, options.paymentMethodId, amountPaid);
 
     await client.query(
       `INSERT INTO ${T.sales}
@@ -215,6 +236,18 @@ export async function recordSale(
         entryDate: saleDate,
         entryType: "sale",
         amount: creditDue,
+        referenceType: "sale",
+        referenceId: saleId,
+        notes: notes || undefined,
+      });
+    }
+
+    if (accountId && amountPaid > 0) {
+      await addAccountLedgerEntryClient(client, {
+        accountId,
+        entryDate: saleDate,
+        entryType: "sale_received",
+        amount: amountPaid,
         referenceType: "sale",
         referenceId: saleId,
         notes: notes || undefined,
@@ -315,6 +348,25 @@ export async function voidSale(saleId: string, voidReason: string): Promise<void
       });
     }
 
+    if (amountPaid > 0) {
+      const accountId = await resolveAccountIdForSaleClient(
+        client,
+        sale.payment_method_id as string | null,
+        amountPaid
+      );
+      if (accountId) {
+        await addAccountLedgerEntryClient(client, {
+          accountId,
+          entryDate: todayISODate(),
+          entryType: "sale_void",
+          amount: -amountPaid,
+          referenceType: "sale",
+          referenceId: saleId,
+          notes: `Void sale: ${voidReason}`,
+        });
+      }
+    }
+
     await client.query(
       `UPDATE ${T.sales} SET status = 'voided', voided_at = NOW(), void_reason = $1 WHERE id = $2`,
       [voidReason, saleId]
@@ -377,6 +429,25 @@ export async function voidPurchase(purchaseId: string, voidReason: string): Prom
         referenceId: purchaseId,
         notes: `Void purchase: ${voidReason}`,
       });
+    }
+
+    if (amountPaid > 0) {
+      const accountId = await resolveAccountIdForOutflowClient(
+        client,
+        purchase.account_id as string | null,
+        amountPaid
+      );
+      if (accountId) {
+        await addAccountLedgerEntryClient(client, {
+          accountId,
+          entryDate: todayISODate(),
+          entryType: "purchase_void",
+          amount: amountPaid,
+          referenceType: "purchase",
+          referenceId: purchaseId,
+          notes: `Void purchase: ${voidReason}`,
+        });
+      }
     }
 
     await client.query(

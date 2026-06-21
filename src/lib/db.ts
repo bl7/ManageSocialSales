@@ -1,10 +1,32 @@
-import { Pool, type PoolClient, type QueryResultRow } from "pg";
+import { Pool, type PoolClient, type PoolConfig, type QueryResultRow } from "pg";
+import { DatabaseUnavailableError, isDatabaseConnectionError } from "@/lib/db-errors";
 
 const globalForPg = globalThis as unknown as { pgPool?: Pool };
 
+function poolOptionsFromUrl(connectionString: string): PoolConfig {
+  const config: PoolConfig = {
+    connectionString,
+    connectionTimeoutMillis: 10_000,
+    idleTimeoutMillis: 30_000,
+    max: 10,
+  };
+
+  try {
+    const parsed = new URL(connectionString);
+    const host = parsed.hostname;
+    if (host !== "localhost" && host !== "127.0.0.1" && !parsed.searchParams.get("sslmode")) {
+      config.ssl = { rejectUnauthorized: false };
+    }
+  } catch {
+    // keep defaults
+  }
+
+  return config;
+}
+
 function createPool(): Pool {
   if (process.env.DATABASE_URL) {
-    return new Pool({ connectionString: process.env.DATABASE_URL });
+    return new Pool(poolOptionsFromUrl(process.env.DATABASE_URL));
   }
 
   const host = process.env.PGHOST;
@@ -26,6 +48,9 @@ function createPool(): Pool {
     database,
     user,
     password,
+    connectionTimeoutMillis: 10_000,
+    idleTimeoutMillis: 30_000,
+    max: 10,
     ssl:
       sslmode === "disable"
         ? false
@@ -52,8 +77,15 @@ export async function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
   params?: unknown[]
 ): Promise<T[]> {
-  const result = await getPool().query<T>(text, params);
-  return result.rows;
+  try {
+    const result = await getPool().query<T>(text, params);
+    return result.rows;
+  } catch (error) {
+    if (isDatabaseConnectionError(error)) {
+      throw new DatabaseUnavailableError();
+    }
+    throw error;
+  }
 }
 
 export async function queryOne<T extends QueryResultRow = QueryResultRow>(
@@ -67,7 +99,15 @@ export async function queryOne<T extends QueryResultRow = QueryResultRow>(
 export async function withTransaction<T>(
   fn: (client: PoolClient) => Promise<T>
 ): Promise<T> {
-  const client = await getPool().connect();
+  let client: PoolClient;
+  try {
+    client = await getPool().connect();
+  } catch (error) {
+    if (isDatabaseConnectionError(error)) {
+      throw new DatabaseUnavailableError();
+    }
+    throw error;
+  }
   try {
     await client.query("BEGIN");
     const result = await fn(client);

@@ -1,4 +1,4 @@
--- Shree Inventory schema (bij_ prefix for shared database)
+-- COUNTER schema (bij_ prefix for shared database)
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 

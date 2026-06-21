@@ -10,9 +10,17 @@ export async function getInvestments() {
     amount: string;
     notes: string | null;
     created_at: string;
+    allocation_summary: string | null;
   }>(`
-    SELECT * FROM ${T.investments}
-    ORDER BY investment_date DESC, created_at DESC
+    SELECT i.*,
+      (
+        SELECT string_agg(a.name || ': ' || ia.amount::text, ', ' ORDER BY a.name)
+        FROM ${T.investmentAllocations} ia
+        JOIN ${T.accounts} a ON a.id = ia.account_id
+        WHERE ia.investment_id = i.id
+      ) AS allocation_summary
+    FROM ${T.investments} i
+    ORDER BY i.investment_date DESC, i.created_at DESC
   `);
 }
 

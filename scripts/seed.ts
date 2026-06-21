@@ -42,7 +42,7 @@ async function seed() {
   if (existingSettings.rows.length === 0) {
     await pool.query(
       `INSERT INTO ${T.settings} (id, business_name, currency, low_stock_default) VALUES ($1, $2, $3, $4)`,
-      [uuidv4(), "Shree Inventory", "Rs.", 5]
+      [uuidv4(), "COUNTER", "Rs.", 5]
     );
     console.log("Default settings created.");
   }
@@ -65,9 +65,9 @@ async function seed() {
     `INSERT INTO ${T.products} (id, name, sku, category, brand, supplier, description)
      VALUES ($1, $2, $3, $4, $5, $6, $7), ($8, $9, $10, $11, $12, $13, $14)`,
     [
-      product1Id, "Classic Cotton Tee", "TEE-001", "T-Shirts", "Shree", "Nepal Textiles",
+      product1Id, "Classic Cotton Tee", "TEE-001", "T-Shirts", "Counter", "Nepal Textiles",
       "Soft cotton everyday t-shirt",
-      product2Id, "High-Waist Jeans", "JNS-001", "Jeans", "Shree", "Denim Co",
+      product2Id, "High-Waist Jeans", "JNS-001", "Jeans", "Counter", "Denim Co",
       "Comfortable high-waist jeans",
     ]
   );

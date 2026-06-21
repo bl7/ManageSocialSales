@@ -20,6 +20,7 @@ export async function SettingsPaymentMethodsPanel() {
           <DataTableHead>
             <tr>
               <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Account</th>
               <th className="px-4 py-3"></th>
             </tr>
           </DataTableHead>
@@ -27,6 +28,7 @@ export async function SettingsPaymentMethodsPanel() {
             {methods.map((m) => (
               <tr key={m.id} className="hover:bg-slate-50">
                 <td className="px-4 py-3 font-medium">{m.name}</td>
+                <td className="px-4 py-3 text-muted">{m.account_name || "Cash (default)"}</td>
                 <td className="px-4 py-3">
                   <Link href={`/settings/payment-methods/${m.id}/edit`} className="text-sm text-primary hover:underline">Edit</Link>
                 </td>

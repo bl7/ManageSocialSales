@@ -1,89 +1,57 @@
 import Link from "next/link";
-import {
-  getDashboardStats,
-  getSettings,
-} from "@/lib/queries/dashboard";
+import { getDashboardStats, getSettings } from "@/lib/queries/dashboard";
+import { getTotalAccountBalance, getCashflowChartData } from "@/lib/queries/accounts";
 import { getLowStockReport } from "@/lib/queries/reports";
-import {
-  getSalesChartData,
-  getPlatformChartData,
-  getRecentActivity,
-} from "@/lib/queries/dashboard-charts";
+import { getRecentActivity } from "@/lib/queries/dashboard-charts";
 import { PageHeader } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
-import { StatCards } from "@/components/dashboard/stat-cards";
-import { SalesChart, PlatformChart } from "@/components/dashboard/dashboard-charts";
+import { DashboardHomeTiles } from "@/components/dashboard/dashboard-home-tiles";
+import { DashboardShortcuts } from "@/components/dashboard/dashboard-shortcuts";
+import { CashflowChart } from "@/components/dashboard/cashflow-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { Plus, PackagePlus, ShoppingCart, Scale } from "lucide-react";
+import { Scale } from "lucide-react";
 
 export default async function DashboardPage() {
-  const [stats, salesChart, platformChart, activity, settings, lowStock] = await Promise.all([
+  const [stats, settings, totalBalance, cashflow, activity, lowStock] = await Promise.all([
     getDashboardStats(),
-    getSalesChartData(30),
-    getPlatformChartData(),
-    getRecentActivity(8),
     getSettings(),
+    getTotalAccountBalance(),
+    getCashflowChartData(7),
+    getRecentActivity(8),
     getLowStockReport(),
   ]);
 
-  const currency = settings?.currency ?? "Rs.";
-
-  const salesData = salesChart.map((r) => ({
-    date: r.date,
-    revenue: Number(r.revenue),
-    units: Number(r.units),
-  }));
-
-  const platformData = platformChart.map((r) => ({
-    platform: r.platform,
-    revenue: Number(r.revenue),
-    count: Number(r.count),
-  }));
+  const currency = settings?.currency ?? stats.currency ?? "Rs.";
+  const monthLabel = new Date().toLocaleString("default", { month: "long" });
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={greeting} description="Here's what's happening in your business today." />
-
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Link href="/sales/new" className="sm:col-span-2 lg:col-span-1">
-          <Button size="lg" className="h-14 w-full text-base shadow-md">
-            <ShoppingCart className="mr-2 h-5 w-5" />
-            Record Sale
-          </Button>
+    <div className="space-y-8">
+      <PageHeader title={greeting} description="Your business at a glance">
+        <Link href="/transactions">
+          <Button variant="outline">View Transactions</Button>
         </Link>
-        <Link href="/purchases/new">
-          <Button size="lg" variant="outline" className="h-14 w-full">
-            <PackagePlus className="mr-2 h-5 w-5" />
-            Record Purchase
-          </Button>
-        </Link>
-        <Link href="/products/new">
-          <Button size="lg" variant="outline" className="h-14 w-full">
-            <Plus className="mr-2 h-5 w-5" />
-            Add Product
-          </Button>
-        </Link>
-        <Link href="/stock-corrections/new">
-          <Button size="lg" variant="outline" className="h-14 w-full">
-            <Scale className="mr-2 h-5 w-5" />
-            Stock Correction
-          </Button>
-        </Link>
-      </div>
+      </PageHeader>
 
-      <section className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold">Business Snapshot</h2>
-        <StatCards stats={{ ...stats, currency }} />
-      </section>
+      <DashboardHomeTiles
+        stats={{
+          total_receivables: stats.total_receivables,
+          total_payables: stats.total_payables,
+          revenue_this_month: stats.revenue_this_month,
+          purchases_this_month: stats.purchases_this_month,
+          expenses_this_month: stats.expenses_this_month,
+          total_balance: totalBalance,
+          currency,
+        }}
+        monthLabel={monthLabel}
+      />
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <SalesChart data={salesData} currency={currency} />
-        <PlatformChart data={platformData} currency={currency} />
-      </div>
+      <DashboardShortcuts />
 
-      <section className="mt-8">
+      <CashflowChart data={cashflow} currency={currency} />
+
+      <section>
         <h2 className="mb-4 text-xl font-semibold">Inventory Attention Required</h2>
         {lowStock.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted">
@@ -92,7 +60,10 @@ export default async function DashboardPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {lowStock.slice(0, 6).map((item) => (
-              <div key={`${item.product_name}-${item.size}-${item.color}`} className="rounded-2xl border border-amber-200 bg-card p-5">
+              <div
+                key={`${item.product_name}-${item.size}-${item.color}`}
+                className="rounded-2xl border border-amber-200 bg-card p-5"
+              >
                 <p className="font-semibold">{item.product_name}</p>
                 <p className="text-sm text-muted">{item.color} / {item.size}</p>
                 <p className="mt-3 text-sm font-medium text-warning">Only {item.current_stock} left</p>
@@ -105,9 +76,18 @@ export default async function DashboardPage() {
         )}
       </section>
 
-      <div className="mt-8">
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Recent Stock Activity</h2>
+          <Link href="/stock-corrections/new">
+            <Button variant="outline" size="sm">
+              <Scale className="mr-2 h-4 w-4" />
+              Stock Correction
+            </Button>
+          </Link>
+        </div>
         <RecentActivity entries={activity} />
-      </div>
+      </section>
     </div>
   );
 }

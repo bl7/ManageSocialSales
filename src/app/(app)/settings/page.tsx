@@ -4,15 +4,17 @@ import { SettingsForm } from "@/components/forms/settings-form";
 import { SettingsTabs, type SettingsTab } from "@/components/settings/settings-tabs";
 import { SettingsCategoriesPanel } from "@/components/settings/settings-categories-panel";
 import { SettingsPaymentMethodsPanel } from "@/components/settings/settings-payment-methods-panel";
+import { SettingsAccountsPanel } from "@/components/settings/settings-accounts-panel";
 import { SettingsExpenseCategoriesPanel } from "@/components/settings/settings-expense-categories-panel";
 import { PageHeader } from "@/components/ui/page";
+import { DEFAULT_BUSINESS_NAME } from "@/lib/branding";
 
 interface Props {
   searchParams: Promise<{ tab?: string }>;
 }
 
 function tabFromParam(tab?: string): SettingsTab {
-  const valid = ["profile", "invoice", "categories", "payment-methods", "expense-categories", "preferences"];
+  const valid = ["profile", "invoice", "categories", "payment-methods", "accounts", "expense-categories", "preferences"];
   if (tab && valid.includes(tab)) return tab as SettingsTab;
   return "profile";
 }
@@ -23,7 +25,7 @@ export default async function SettingsPage({ searchParams }: Props) {
   const settings = await getSettings();
 
   const settingsData = {
-    business_name: settings?.business_name ?? "Shree Inventory",
+    business_name: settings?.business_name ?? DEFAULT_BUSINESS_NAME,
     currency: settings?.currency ?? "Rs.",
     low_stock_default: settings?.low_stock_default ?? 5,
     phone: settings?.phone,
@@ -37,6 +39,7 @@ export default async function SettingsPage({ searchParams }: Props) {
     invoice: "Invoice numbering and defaults",
     categories: "Manage product category options",
     "payment-methods": "Manage sale payment methods",
+    accounts: "Cash, bank, and digital wallet balances",
     "expense-categories": "Manage expense category options",
     preferences: "Currency and application defaults",
   };
@@ -56,6 +59,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         {tab === "preferences" && <SettingsForm settings={settingsData} section="preferences" />}
         {tab === "categories" && <SettingsCategoriesPanel />}
         {tab === "payment-methods" && <SettingsPaymentMethodsPanel />}
+        {tab === "accounts" && <SettingsAccountsPanel />}
         {tab === "expense-categories" && <SettingsExpenseCategoriesPanel />}
       </div>
     </div>

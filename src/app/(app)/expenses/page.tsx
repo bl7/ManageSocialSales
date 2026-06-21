@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getExpenses, getExpensesTotal, getExpenseCategories } from "@/lib/queries/expenses";
+import { getAccounts } from "@/lib/queries/accounts";
 import { getSettings } from "@/lib/queries/dashboard";
 import { resolveListDateRange } from "@/lib/date-ranges";
 import { PageHeader, EmptyState, ListPage, ListFilterBar } from "@/components/ui/page";
@@ -22,17 +23,18 @@ export default async function ExpensesPage({ searchParams }: Props) {
   const params = await searchParams;
   const { from: dateFrom, to: dateTo } = resolveDates(params);
 
-  const [expenses, total, categories, settings] = await Promise.all([
+  const [expenses, total, categories, accounts, settings] = await Promise.all([
     getExpenses(dateFrom, dateTo),
     getExpensesTotal(dateFrom, dateTo),
     getExpenseCategories(),
+    getAccounts(),
     getSettings(),
   ]);
 
   const currency = settings?.currency ?? "Rs.";
 
   if (params.new === "1") {
-    return <ExpenseForm categories={categories} />;
+    return <ExpenseForm categories={categories} accounts={accounts.map((a) => ({ id: a.id, name: a.name }))} />;
   }
 
   return (

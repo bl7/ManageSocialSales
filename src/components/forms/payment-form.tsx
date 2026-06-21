@@ -8,15 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { AccountSelect } from "@/components/ui/account-select";
 import { FormGroup, Label, ErrorMessage } from "@/components/ui/page";
 import { todayISODate } from "@/lib/date-ranges";
 
 interface PaymentFormProps {
   partyId: string;
   defaultDirection: "received" | "paid";
+  accounts: { id: string; name: string }[];
 }
 
-export function PaymentForm({ partyId, defaultDirection }: PaymentFormProps) {
+export function PaymentForm({ partyId, defaultDirection, accounts }: PaymentFormProps) {
   const router = useRouter();
   const today = todayISODate();
   const [state, action, pending] = useActionState(recordPaymentAction, null);
@@ -49,15 +51,7 @@ export function PaymentForm({ partyId, defaultDirection }: PaymentFormProps) {
           <Label htmlFor="amount">Amount *</Label>
           <Input id="amount" name="amount" type="number" min="0.01" step="0.01" required />
         </FormGroup>
-        <FormGroup>
-          <Label htmlFor="payment_method">Method</Label>
-          <Select id="payment_method" name="payment_method" defaultValue="cash">
-            <option value="cash">Cash</option>
-            <option value="bank">Bank</option>
-            <option value="esewa">eSewa</option>
-            <option value="other">Other</option>
-          </Select>
-        </FormGroup>
+        <AccountSelect accounts={accounts} label="Paid from / into account" />
       </div>
       <FormGroup>
         <Label htmlFor="notes">Notes</Label>

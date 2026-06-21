@@ -1,6 +1,6 @@
-# Shree Inventory
+# COUNTER
 
-Internal inventory management web application for a small Instagram-based clothing business. Track products, purchases, sales, stock adjustments, and view complete stock movement history.
+Internal business counter for inventory, sales, purchases, parties, expenses, and cash ledger.
 
 ## Tech Stack
 

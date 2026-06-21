@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPartyById, getPartyLedger } from "@/lib/queries/parties";
 import { getSettings } from "@/lib/queries/dashboard";
+import { getAccounts } from "@/lib/queries/accounts";
 import { PageHeader } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardValue } from "@/components/ui/card";
@@ -23,9 +24,10 @@ const ENTRY_LABELS: Record<string, string> = {
 
 export default async function PartyDetailPage({ params }: Props) {
   const { id } = await params;
-  const [party, ledger, settings] = await Promise.all([
+  const [party, ledger, accounts, settings] = await Promise.all([
     getPartyById(id),
     getPartyLedger(id),
+    getAccounts(),
     getSettings(),
   ]);
 
@@ -58,7 +60,11 @@ export default async function PartyDetailPage({ params }: Props) {
       <div className="mb-8 grid gap-6 lg:grid-cols-2">
         <Card>
           <h3 className="mb-4 font-semibold">Record Payment</h3>
-          <PaymentForm partyId={id} defaultDirection={defaultDirection as "received" | "paid"} />
+          <PaymentForm
+            partyId={id}
+            defaultDirection={defaultDirection as "received" | "paid"}
+            accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
+          />
         </Card>
         {party.address && (
           <Card>

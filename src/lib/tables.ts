@@ -1,4 +1,4 @@
-/** All Shree Inventory tables use the bij_ prefix (shared database). */
+/** COUNTER app tables use the bij_ prefix (shared database). */
 export const T = {
   appUser: "bij_app_user",
   products: "bij_products",
@@ -18,4 +18,7 @@ export const T = {
   investments: "bij_investments",
   productCategories: "bij_product_categories",
   salePaymentMethods: "bij_sale_payment_methods",
+  accounts: "bij_accounts",
+  accountLedger: "bij_account_ledger",
+  investmentAllocations: "bij_investment_allocations",
 } as const;

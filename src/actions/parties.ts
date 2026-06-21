@@ -7,6 +7,7 @@ import { T } from "@/lib/tables";
 import { requireUser } from "@/actions/auth";
 import { partySchema, paymentSchema, formatZodErrors } from "@/lib/validators";
 import { addPartyLedgerEntryClient } from "@/lib/queries/parties";
+import { addAccountLedgerEntryClient } from "@/lib/queries/accounts";
 import { todayISODate } from "@/lib/date-ranges";
 import type { ActionResult } from "@/actions/auth";
 
@@ -127,7 +128,7 @@ export async function recordPaymentAction(
     payment_date: formData.get("payment_date"),
     amount: formData.get("amount"),
     direction: formData.get("direction"),
-    payment_method: formData.get("payment_method") || "cash",
+    account_id: formData.get("account_id"),
     notes: formData.get("notes") || undefined,
   });
 
@@ -140,7 +141,7 @@ export async function recordPaymentAction(
       const paymentId = uuidv4();
       await client.query(
         `INSERT INTO ${T.payments}
-         (id, party_id, payment_date, amount, direction, payment_method, notes)
+         (id, party_id, payment_date, amount, direction, account_id, notes)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [
           paymentId,
@@ -148,7 +149,7 @@ export async function recordPaymentAction(
           parsed.data.payment_date,
           parsed.data.amount,
           parsed.data.direction,
-          parsed.data.payment_method,
+          parsed.data.account_id,
           parsed.data.notes || null,
         ]
       );
@@ -162,8 +163,21 @@ export async function recordPaymentAction(
         referenceId: paymentId,
         notes: parsed.data.notes,
       });
+
+      await addAccountLedgerEntryClient(client, {
+        accountId: parsed.data.account_id,
+        entryDate: parsed.data.payment_date,
+        entryType: parsed.data.direction === "received" ? "payment_in" : "payment_out",
+        amount: parsed.data.direction === "received" ? parsed.data.amount : -parsed.data.amount,
+        referenceType: "payment",
+        referenceId: paymentId,
+        notes: parsed.data.notes,
+      });
     });
 
+    revalidatePath("/parties");
+    revalidatePath("/dashboard");
+    revalidatePath("/transactions");
     return { success: true };
   } catch {
     return { success: false, error: "Failed to record payment" };

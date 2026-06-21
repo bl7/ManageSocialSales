@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getInvestmentSummary } from "@/lib/queries/investments";
 import { getSettings } from "@/lib/queries/dashboard";
+import { getAccounts } from "@/lib/queries/accounts";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardValue } from "@/components/ui/card";
@@ -16,7 +17,13 @@ export default async function InvestmentPage({ searchParams }: Props) {
   const params = await searchParams;
 
   if (params.new === "1") {
-    return <InvestmentForm />;
+    const [accounts, settings] = await Promise.all([getAccounts(), getSettings()]);
+    return (
+      <InvestmentForm
+        accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
+        currency={settings?.currency ?? "Rs."}
+      />
+    );
   }
 
   const [summary, settings] = await Promise.all([
@@ -121,6 +128,7 @@ export default async function InvestmentPage({ searchParams }: Props) {
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Investor</th>
               <th className="px-4 py-3 text-right">Amount</th>
+              <th className="px-4 py-3">Accounts</th>
               <th className="px-4 py-3">Notes</th>
             </tr>
           </DataTableHead>
@@ -131,6 +139,9 @@ export default async function InvestmentPage({ searchParams }: Props) {
                 <td className="px-4 py-3 font-medium">{inv.investor_name}</td>
                 <td className="px-4 py-3 text-right font-medium">
                   {formatCurrency(inv.amount, currency)}
+                </td>
+                <td className="px-4 py-3 text-sm text-muted">
+                  {(inv as { allocation_summary?: string | null }).allocation_summary || "—"}
                 </td>
                 <td className="px-4 py-3 text-muted">{inv.notes || "—"}</td>
               </tr>

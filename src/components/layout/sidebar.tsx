@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import {
   LayoutDashboard,
+  ArrowLeftRight,
   Shirt,
   PackagePlus,
   Receipt,
@@ -30,6 +31,7 @@ import {
 
 const mainNav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
   { href: "/products", label: "Products", icon: Shirt },
   { href: "/sales", label: "Sales", icon: Receipt },
   { href: "/purchases", label: "Purchases", icon: PackagePlus },
@@ -46,6 +48,7 @@ const mobileMore = mainNav.slice(4);
 
 function isNavActive(pathname: string, href: string) {
   if (href === "/dashboard") return pathname === "/dashboard";
+  if (href === "/transactions") return pathname === "/transactions";
   if (href === "/sales") return pathname === "/sales" || pathname.startsWith("/sales/");
   if (href === "/purchases") return pathname === "/purchases" || pathname.startsWith("/purchases/");
   if (href === "/settings") return pathname === "/settings" || pathname.startsWith("/settings");
@@ -80,24 +83,31 @@ export function Sidebar({
   const NavContent = ({ mobile = false }: { mobile?: boolean }) => (
     <>
       <div className={cn("border-b border-white/10 px-4 py-5", collapsed && !mobile && "px-3 py-4")}>
-        <div className={cn("flex items-center gap-3", collapsed && !mobile && "justify-center")}>
+        <div className={cn("flex flex-col items-center text-center", collapsed && !mobile && "items-center")}>
           {logoUrl && !logoError ? (
             <img
               src={logoUrl}
               alt={businessName}
-              className="h-10 w-10 shrink-0 rounded-xl object-cover"
+              className={cn(
+                "shrink-0 rounded-xl object-cover",
+                collapsed && !mobile ? "h-10 w-10" : "h-12 w-12"
+              )}
               onError={() => setLogoError(true)}
             />
           ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-lg font-bold text-white">
+            <div
+              className={cn(
+                "flex shrink-0 items-center justify-center rounded-xl bg-primary font-bold text-white",
+                collapsed && !mobile ? "h-10 w-10 text-lg" : "h-12 w-12 text-xl"
+              )}
+            >
               {businessName.charAt(0).toUpperCase()}
             </div>
           )}
           {(!collapsed || mobile) && (
-            <div className="min-w-0">
-              <h2 className="truncate text-base font-bold text-sidebar-foreground">{businessName}</h2>
-              <p className="text-xs text-sidebar-muted">Inventory Management</p>
-            </div>
+            <h2 className="mt-3 line-clamp-2 text-sm font-bold leading-snug text-sidebar-foreground">
+              {businessName}
+            </h2>
           )}
         </div>
         {(!collapsed || mobile) && (

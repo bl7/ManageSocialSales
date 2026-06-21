@@ -11,6 +11,7 @@ import { VariantPicker } from "@/components/ui/variant-picker";
 import { CreatableSelect, type CreatableOption } from "@/components/ui/creatable-select";
 import { quickCreatePartyAction } from "@/actions/parties";
 import { Select } from "@/components/ui/select";
+import { AccountSelect } from "@/components/ui/account-select";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
 import { formatCurrency } from "@/lib/utils";
 import { todayISODate } from "@/lib/date-ranges";
@@ -36,6 +37,7 @@ interface PurchaseFormProps {
   lastSupplier?: string | null;
   supplierSuggestions?: string[];
   suppliers?: { id: string; name: string; phone?: string | null }[];
+  accounts?: { id: string; name: string }[];
 }
 
 export function PurchaseForm({
@@ -44,6 +46,7 @@ export function PurchaseForm({
   lastSupplier,
   supplierSuggestions = [],
   suppliers = [],
+  accounts = [],
 }: PurchaseFormProps) {
   const router = useRouter();
   const today = todayISODate();
@@ -199,6 +202,9 @@ export function PurchaseForm({
                 <Label htmlFor="due_date">Due Date</Label>
                 <Input id="due_date" name="due_date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
               </FormGroup>
+            )}
+            {(paymentMode === "paid" || paymentMode === "partial") && accounts.length > 0 && (
+              <AccountSelect accounts={accounts} label="Paid from account" />
             )}
           </div>
           {creditDue > 0 && (

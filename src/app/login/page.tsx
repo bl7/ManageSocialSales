@@ -5,6 +5,7 @@ import { loginAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ErrorMessage, FormGroup, Label } from "@/components/ui/page";
+import { PLATFORM_NAME, PLATFORM_TAGLINE } from "@/lib/branding";
 
 export default function LoginPage() {
   const [state, action, pending] = useActionState(loginAction, null);
@@ -14,10 +15,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
         <div className="bg-primary px-8 py-6 text-center text-primary-foreground">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold">
-            S
+            C
           </div>
-          <h1 className="text-2xl font-bold">Shree Inventory</h1>
-          <p className="mt-1 text-sm text-teal-100">Manage your business smarter</p>
+          <h1 className="text-2xl font-bold">{PLATFORM_NAME}</h1>
+          <p className="mt-1 text-sm text-teal-100">{PLATFORM_TAGLINE}</p>
         </div>
 
         <form action={action} className="space-y-4 p-8">

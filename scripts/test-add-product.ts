@@ -16,7 +16,7 @@ async function testAddProduct() {
     await pool.query(
       `INSERT INTO ${T.products} (id, name, sku, category, brand, supplier, description)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [productId, "Test Hoodie", sku, "Hoodies", "Shree", "Test Supplier", "Automated test product"]
+      [productId, "Test Hoodie", sku, "Hoodies", "Counter", "Test Supplier", "Automated test product"]
     );
 
     await pool.query(

@@ -8,16 +8,17 @@ import { quickCreateExpenseCategoryAction } from "@/actions/expense-categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select } from "@/components/ui/select";
 import { CreatableSelect, type CreatableOption } from "@/components/ui/creatable-select";
+import { AccountSelect } from "@/components/ui/account-select";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
 import { todayISODate } from "@/lib/date-ranges";
 
 interface ExpenseFormProps {
   categories: { id: string; name: string }[];
+  accounts: { id: string; name: string }[];
 }
 
-export function ExpenseForm({ categories: initialCategories }: ExpenseFormProps) {
+export function ExpenseForm({ categories: initialCategories, accounts }: ExpenseFormProps) {
   const router = useRouter();
   const today = todayISODate();
   const [state, action, pending] = useActionState(recordExpenseAction, null);
@@ -74,14 +75,7 @@ export function ExpenseForm({ categories: initialCategories }: ExpenseFormProps)
             <Label htmlFor="amount">Amount *</Label>
             <Input id="amount" name="amount" type="number" min="0.01" step="0.01" required />
           </FormGroup>
-          <FormGroup>
-            <Label htmlFor="payment_method">Payment Method</Label>
-            <Select id="payment_method" name="payment_method" defaultValue="cash">
-              <option value="cash">Cash</option>
-              <option value="bank">Bank</option>
-              <option value="esewa">eSewa</option>
-            </Select>
-          </FormGroup>
+          <AccountSelect accounts={accounts} label="Paid from account" />
           <FormGroup>
             <Label htmlFor="notes">Notes</Label>
             <Textarea id="notes" name="notes" />

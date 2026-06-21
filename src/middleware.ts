@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const SESSION_COOKIE = "shree_session";
+const SESSION_COOKIE = "counter_session";
 const publicPaths = ["/login"];
 
 function getJwtSecret(): Uint8Array {

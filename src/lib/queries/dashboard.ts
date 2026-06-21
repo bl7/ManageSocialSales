@@ -106,6 +106,18 @@ export async function getDashboardStats() {
     getTotalPayables(),
   ]);
 
+  const purchasesMonth = await queryOne<{ total: string }>(`
+    SELECT COALESCE(SUM(p.total_amount), 0)::numeric AS total
+    FROM ${T.purchases} p
+    WHERE p.purchase_date >= $1 AND COALESCE(p.status, 'active') = 'active'
+  `, [monthStartStr]);
+
+  const expensesMonth = await queryOne<{ total: string }>(`
+    SELECT COALESCE(SUM(amount), 0)::numeric AS total
+    FROM ${T.expenses}
+    WHERE expense_date >= $1
+  `, [monthStartStr]);
+
   return {
     total_products: Number(stats?.total_products ?? 0),
     total_variants: Number(stats?.total_variants ?? 0),
@@ -119,6 +131,8 @@ export async function getDashboardStats() {
     profit_this_month: Number(profit?.profit ?? 0),
     total_receivables: receivables,
     total_payables: payables,
+    purchases_this_month: Number(purchasesMonth?.total ?? 0),
+    expenses_this_month: Number(expensesMonth?.total ?? 0),
     currency,
   };
 }

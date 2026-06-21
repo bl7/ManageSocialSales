@@ -9,6 +9,7 @@ const TABS = [
   { id: "invoice", label: "Invoice Settings" },
   { id: "categories", label: "Product Categories" },
   { id: "payment-methods", label: "Payment Methods" },
+  { id: "accounts", label: "Accounts" },
   { id: "expense-categories", label: "Expense Categories" },
   { id: "preferences", label: "App Preferences" },
 ] as const;

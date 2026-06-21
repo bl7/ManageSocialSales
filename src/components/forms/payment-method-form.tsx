@@ -6,14 +6,16 @@ import { toast } from "sonner";
 import { savePaymentMethodAction, deletePaymentMethodAction } from "@/actions/payment-methods";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
 
 interface PaymentMethodFormProps {
-  method?: { id: string; name: string };
+  method?: { id: string; name: string; account_id?: string | null };
   saleCount?: number;
+  accounts: { id: string; name: string }[];
 }
 
-export function PaymentMethodForm({ method, saleCount = 0 }: PaymentMethodFormProps) {
+export function PaymentMethodForm({ method, saleCount = 0, accounts }: PaymentMethodFormProps) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -66,6 +68,16 @@ export function PaymentMethodForm({ method, saleCount = 0 }: PaymentMethodFormPr
           <FormGroup>
             <Label htmlFor="name">Name *</Label>
             <Input id="name" name="name" required defaultValue={method?.name} placeholder="e.g. COD" />
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="account_id">Deposits into account</Label>
+            <Select id="account_id" name="account_id" defaultValue={method?.account_id ?? ""}>
+              <option value="">None (cash only when paid — uses Cash default)</option>
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </Select>
+            <p className="mt-1 text-xs text-muted">Leave empty for COD. Paid amount still defaults to Cash if unset.</p>
           </FormGroup>
           {method && saleCount > 0 && (
             <p className="text-sm text-muted">{saleCount} sale(s) use this method.</p>
