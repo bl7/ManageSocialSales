@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { formatCurrency } from "@/lib/utils";
 import { todayISODate } from "@/lib/date-ranges";
 
@@ -94,7 +95,7 @@ export function InvestmentForm({
             </FormGroup>
             <FormGroup>
               <Label htmlFor="investment_date">Investment Date *</Label>
-              <Input id="investment_date" name="investment_date" type="date" required defaultValue={today} />
+              <NepaliDateInput id="investment_date" name="investment_date" required defaultValue={today} />
             </FormGroup>
           </div>
 

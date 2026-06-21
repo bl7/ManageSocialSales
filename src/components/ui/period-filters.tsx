@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { SALES_DATE_PRESETS, matchesPreset } from "@/lib/date-ranges";
 
 interface Props {
@@ -39,11 +40,11 @@ export function PeriodFilters({ dateFrom, dateTo, basePath = "/purchases" }: Pro
       <form action={basePath} method="get" className="flex flex-wrap items-end gap-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">From</label>
-          <input name="dateFrom" type="date" defaultValue={dateFrom} className="h-11 rounded-xl border border-border px-3 text-sm" />
+          <NepaliDateInput name="dateFrom" defaultValue={dateFrom} required />
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">To</label>
-          <input name="dateTo" type="date" defaultValue={dateTo} className="h-11 rounded-xl border border-border px-3 text-sm" />
+          <NepaliDateInput name="dateTo" defaultValue={dateTo} required />
         </div>
         <Button type="submit">Apply</Button>
       </form>

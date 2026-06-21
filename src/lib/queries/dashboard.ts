@@ -1,6 +1,6 @@
 import { query, queryOne } from "@/lib/db";
 import { getTotalReceivables, getTotalPayables } from "@/lib/queries/parties";
-import { toISODate } from "@/lib/date-ranges";
+import { getCurrentNepaliMonthRange } from "@/lib/nepali-date";
 import { T } from "@/lib/tables";
 
 export async function getSettings() {
@@ -72,10 +72,7 @@ export async function getDashboardStats() {
     WHERE s.current_stock > 0
   `);
 
-  const monthStart = new Date();
-  monthStart.setDate(1);
-  monthStart.setHours(0, 0, 0, 0);
-  const monthStartStr = toISODate(monthStart);
+  const { from: monthStartStr } = getCurrentNepaliMonthRange();
 
   const salesMonth = await queryOne<{
     sales_count: string;

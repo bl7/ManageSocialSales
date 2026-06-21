@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CreatableSelect, type CreatableOption } from "@/components/ui/creatable-select";
 import { AccountSelect } from "@/components/ui/account-select";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { todayISODate } from "@/lib/date-ranges";
 
 interface ExpenseFormProps {
@@ -57,7 +58,7 @@ export function ExpenseForm({ categories: initialCategories, accounts }: Expense
         <fieldset disabled={pending} className="rounded-xl border border-border bg-card p-5 space-y-4 disabled:opacity-60">
           <FormGroup>
             <Label htmlFor="expense_date">Date *</Label>
-            <Input id="expense_date" name="expense_date" type="date" required defaultValue={today} />
+            <NepaliDateInput id="expense_date" name="expense_date" required defaultValue={today} />
           </FormGroup>
           <FormGroup>
             <Label>Category *</Label>

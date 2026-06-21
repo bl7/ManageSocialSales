@@ -11,6 +11,7 @@ import {
   Legend,
 } from "recharts";
 import { Card } from "@/components/ui/card";
+import { formatNepaliDate, formatNepaliShortDate, parseDateInput } from "@/lib/nepali-date";
 import { formatCurrency } from "@/lib/utils";
 
 interface Props {
@@ -49,17 +50,14 @@ export function CashflowChart({ data, currency }: Props) {
             <XAxis
               dataKey="date"
               tick={{ fontSize: 11 }}
-              tickFormatter={(v) => {
-                const d = new Date(v);
-                return `${d.getDate()}/${d.getMonth() + 1}`;
-              }}
+              tickFormatter={(v) => formatNepaliShortDate(parseDateInput(v))}
             />
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip
               formatter={(value, name) =>
                 formatCurrency(Number(value), currency) + (name === "money_out" ? "" : "")
               }
-              labelFormatter={(label) => new Date(label).toLocaleDateString()}
+              labelFormatter={(label) => formatNepaliDate(parseDateInput(label))}
             />
             <Legend />
             <Bar dataKey="money_in" fill="#10b981" radius={[4, 4, 0, 0]} name="Money In" />

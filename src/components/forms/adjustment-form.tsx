@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { VariantPicker } from "@/components/ui/variant-picker";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { todayISODate } from "@/lib/date-ranges";
 
 interface Variant {
@@ -79,7 +80,7 @@ export function AdjustmentForm({ variants }: { variants: Variant[] }) {
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <FormGroup>
               <Label htmlFor="adjustment_date">Date *</Label>
-              <Input id="adjustment_date" name="adjustment_date" type="date" required defaultValue={today} />
+              <NepaliDateInput id="adjustment_date" name="adjustment_date" required defaultValue={today} />
             </FormGroup>
             <FormGroup>
               <Label>Product / Variant *</Label>

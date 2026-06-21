@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn, formatCurrency } from "@/lib/utils";
+import { formatNepaliMonthLong } from "@/lib/nepali-date";
 import { logoutAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/layout/sidebar-context";
@@ -113,7 +114,7 @@ export function Sidebar({
         {(!collapsed || mobile) && (
           <>
             <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
-              <p className="text-xs text-sidebar-muted">This month revenue</p>
+              <p className="text-xs text-sidebar-muted">{formatNepaliMonthLong()} revenue</p>
               <p className="mt-1 text-base font-semibold text-sidebar-foreground">
                 {formatCurrency(monthRevenue, currency)}
               </p>

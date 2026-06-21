@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { AccountSelect } from "@/components/ui/account-select";
 import { FormGroup, Label, ErrorMessage } from "@/components/ui/page";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { todayISODate } from "@/lib/date-ranges";
 
 interface PaymentFormProps {
@@ -38,7 +39,7 @@ export function PaymentForm({ partyId, defaultDirection, accounts }: PaymentForm
       <div className="grid gap-3 sm:grid-cols-2">
         <FormGroup>
           <Label htmlFor="payment_date">Date *</Label>
-          <Input id="payment_date" name="payment_date" type="date" required defaultValue={today} />
+          <NepaliDateInput id="payment_date" name="payment_date" required defaultValue={today} />
         </FormGroup>
         <FormGroup>
           <Label htmlFor="direction">Type *</Label>

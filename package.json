@@ -11,6 +11,7 @@
     "db:seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
+    "@sbmdkl/nepali-date-converter": "^2.0.5",
     "bcrypt": "^6.0.0",
     "clsx": "^2.1.1",
     "jose": "^6.2.3",

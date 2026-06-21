@@ -14,6 +14,7 @@ import { quickCreatePartyAction } from "@/actions/parties";
 import { quickCreatePaymentMethodAction } from "@/actions/payment-methods";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { formatCurrency } from "@/lib/utils";
 import { todayISODate } from "@/lib/date-ranges";
 
@@ -197,7 +198,7 @@ export function SaleForm({
             <div className="grid gap-4 sm:grid-cols-2">
               <FormGroup>
                 <Label htmlFor="sale_date">Sale Date *</Label>
-                <Input id="sale_date" name="sale_date" type="date" required defaultValue={today} />
+                <NepaliDateInput id="sale_date" name="sale_date" required defaultValue={today} />
               </FormGroup>
               <FormGroup>
                 <Label htmlFor="platform">Platform</Label>
@@ -335,12 +336,11 @@ export function SaleForm({
               {(paymentMode === "credit" || paymentMode === "partial") && (
                 <FormGroup>
                   <Label htmlFor="due_date">Due Date</Label>
-                  <Input
+                  <NepaliDateInput
                     id="due_date"
                     name="due_date"
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
+                    value={dueDate || today}
+                    onChange={setDueDate}
                   />
                 </FormGroup>
               )}

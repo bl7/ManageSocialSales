@@ -9,6 +9,7 @@ import { DashboardHomeTiles } from "@/components/dashboard/dashboard-home-tiles"
 import { DashboardShortcuts } from "@/components/dashboard/dashboard-shortcuts";
 import { CashflowChart } from "@/components/dashboard/cashflow-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
+import { formatNepaliMonthLong } from "@/lib/nepali-date";
 import { Scale } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -22,7 +23,7 @@ export default async function DashboardPage() {
   ]);
 
   const currency = settings?.currency ?? stats.currency ?? "Rs.";
-  const monthLabel = new Date().toLocaleString("default", { month: "long" });
+  const monthLabel = formatNepaliMonthLong();
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
 

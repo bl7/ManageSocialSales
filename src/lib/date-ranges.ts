@@ -1,3 +1,5 @@
+import { getCurrentNepaliMonthRange } from "@/lib/nepali-date";
+
 export function toISODate(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -26,10 +28,8 @@ export function getDateRange(preset: string): { from: string; to: string } | nul
       from.setDate(from.getDate() - 6);
       return { from: toISODate(from), to: toISODate(today) };
     }
-    case "month": {
-      const from = new Date(today.getFullYear(), today.getMonth(), 1);
-      return { from: toISODate(from), to: toISODate(today) };
-    }
+    case "month":
+      return getCurrentNepaliMonthRange();
     case "30days": {
       const from = new Date(today);
       from.setDate(from.getDate() - 29);

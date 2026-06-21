@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { todayISODate } from "@/lib/date-ranges";
 
 interface Props {
@@ -68,10 +69,8 @@ export function LedgerFilters({
           <option value="sale_void">Sale Void</option>
           <option value="purchase_void">Purchase Void</option>
         </select>
-        <input name="dateFrom" type="date" defaultValue={dateFrom}
-          className="h-10 rounded-lg border border-border px-3 text-sm" />
-        <input name="dateTo" type="date" defaultValue={dateTo}
-          className="h-10 rounded-lg border border-border px-3 text-sm" />
+        <NepaliDateInput name="dateFrom" defaultValue={dateFrom} allowEmpty={!dateFrom} />
+        <NepaliDateInput name="dateTo" defaultValue={dateTo} allowEmpty={!dateTo} />
         <Button type="submit" className="sm:col-span-2 lg:col-span-3">Apply Filters</Button>
       </div>
     </form>

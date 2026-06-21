@@ -13,6 +13,7 @@ import { quickCreatePartyAction } from "@/actions/parties";
 import { Select } from "@/components/ui/select";
 import { AccountSelect } from "@/components/ui/account-select";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { formatCurrency } from "@/lib/utils";
 import { todayISODate } from "@/lib/date-ranges";
 
@@ -141,7 +142,7 @@ export function PurchaseForm({
             <div className="grid gap-4 sm:grid-cols-2">
               <FormGroup>
                 <Label htmlFor="purchase_date">Purchase Date *</Label>
-                <Input id="purchase_date" name="purchase_date" type="date" required defaultValue={today} />
+                <NepaliDateInput id="purchase_date" name="purchase_date" required defaultValue={today} />
               </FormGroup>
             <FormGroup>
               <Label htmlFor="supplier">Supplier name</Label>
@@ -200,7 +201,7 @@ export function PurchaseForm({
             {(paymentMode === "credit" || paymentMode === "partial") && (
               <FormGroup>
                 <Label htmlFor="due_date">Due Date</Label>
-                <Input id="due_date" name="due_date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                <NepaliDateInput id="due_date" name="due_date" value={dueDate || today} onChange={setDueDate} />
               </FormGroup>
             )}
             {(paymentMode === "paid" || paymentMode === "partial") && accounts.length > 0 && (

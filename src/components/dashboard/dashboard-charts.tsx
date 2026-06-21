@@ -14,6 +14,7 @@ import {
   Legend,
 } from "recharts";
 import { Card } from "@/components/ui/card";
+import { formatNepaliDate, formatNepaliMonthLong, formatNepaliShortDate, parseDateInput } from "@/lib/nepali-date";
 import { formatCurrency } from "@/lib/utils";
 
 const COLORS = ["#0d9488", "#14b8a6", "#2dd4bf", "#5eead4", "#99f6e4", "#64748b"];
@@ -41,17 +42,14 @@ export function SalesChart({ data, currency }: SalesChartProps) {
           <XAxis
             dataKey="date"
             tick={{ fontSize: 11 }}
-            tickFormatter={(v) => {
-              const d = new Date(v);
-              return `${d.getDate()}/${d.getMonth() + 1}`;
-            }}
+            tickFormatter={(v) => formatNepaliShortDate(parseDateInput(v))}
           />
           <YAxis tick={{ fontSize: 11 }} />
           <Tooltip
             formatter={(value, name) =>
               name === "revenue" ? formatCurrency(Number(value), currency) : value
             }
-            labelFormatter={(label) => new Date(label).toLocaleDateString()}
+            labelFormatter={(label) => formatNepaliDate(parseDateInput(label))}
           />
           <Bar dataKey="revenue" fill="#0d9488" radius={[4, 4, 0, 0]} name="Revenue" />
         </BarChart>
@@ -76,7 +74,7 @@ export function PlatformChart({ data, currency }: PlatformChartProps) {
 
   return (
     <Card>
-      <h3 className="mb-4 font-semibold">Sales by Platform — This Month</h3>
+      <h3 className="mb-4 font-semibold">Sales by Platform — {formatNepaliMonthLong()}</h3>
       <ResponsiveContainer width="100%" height={260}>
         <PieChart>
           <Pie
