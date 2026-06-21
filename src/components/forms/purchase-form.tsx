@@ -35,8 +35,6 @@ interface LineItem {
 interface PurchaseFormProps {
   variants: Variant[];
   currency?: string;
-  lastSupplier?: string | null;
-  supplierSuggestions?: string[];
   suppliers?: { id: string; name: string; phone?: string | null }[];
   accounts?: { id: string; name: string }[];
 }
@@ -44,8 +42,6 @@ interface PurchaseFormProps {
 export function PurchaseForm({
   variants,
   currency = "Rs.",
-  lastSupplier,
-  supplierSuggestions = [],
   suppliers = [],
   accounts = [],
 }: PurchaseFormProps) {
@@ -144,34 +140,23 @@ export function PurchaseForm({
                 <Label htmlFor="purchase_date">Purchase Date *</Label>
                 <NepaliDateInput id="purchase_date" name="purchase_date" required defaultValue={today} />
               </FormGroup>
-            <FormGroup>
-              <Label htmlFor="supplier">Supplier name</Label>
-              <Input
-                id="supplier"
-                name="supplier"
-                list="supplier-suggestions"
-                defaultValue={lastSupplier ?? ""}
-              />
-              <datalist id="supplier-suggestions">
-                {supplierSuggestions.map((s) => (
-                  <option key={s} value={s} />
-                ))}
-              </datalist>
-            </FormGroup>
-            <FormGroup className="sm:col-span-2">
-              <Label>Supplier party (for credit tracking)</Label>
-              <CreatableSelect
-                name="party_id"
-                value={partyId}
-                onChange={setPartyId}
-                options={supplierOptions}
-                onOptionsChange={setSupplierOptions}
-                onCreate={handleCreateSupplier}
-                placeholder="Search or add supplier..."
-                createLabel={(q) => `Add supplier "${q}"`}
-              />
-            </FormGroup>
-          </div>
+              <FormGroup className="sm:col-span-2">
+                <Label>Supplier</Label>
+                <CreatableSelect
+                  name="party_id"
+                  value={partyId}
+                  onChange={setPartyId}
+                  options={supplierOptions}
+                  onOptionsChange={setSupplierOptions}
+                  onCreate={handleCreateSupplier}
+                  placeholder="Search or add supplier..."
+                  createLabel={(q) => `Add supplier "${q}"`}
+                />
+                <p className="mt-1 text-xs text-muted">
+                  Required for credit or partial payment. Links to Parties for udhar tracking.
+                </p>
+              </FormGroup>
+            </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormGroup>
               <Label htmlFor="payment_mode">Payment</Label>

@@ -37,7 +37,6 @@ export async function recordPurchaseAction(
 
   const parsed = purchaseSchema.safeParse({
     purchase_date: formData.get("purchase_date"),
-    supplier: formData.get("supplier") || undefined,
     party_id: formData.get("party_id") || undefined,
     amount_paid: formData.get("amount_paid") ?? undefined,
     due_date: formData.get("due_date") || undefined,
@@ -52,7 +51,6 @@ export async function recordPurchaseAction(
   try {
     await recordPurchase(
       parsed.data.purchase_date,
-      parsed.data.supplier,
       parsed.data.notes,
       parsed.data.items.map((i) => ({
         variant_id: i.variant_id,

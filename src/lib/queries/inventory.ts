@@ -41,7 +41,6 @@ export interface PurchaseOptions {
 
 export async function recordPurchase(
   purchaseDate: string,
-  supplier: string | undefined,
   notes: string | undefined,
   items: PurchaseItemInput[],
   options: PurchaseOptions = {}
@@ -59,6 +58,15 @@ export async function recordPurchase(
     const creditDue = Math.max(0, totalAmount - amountPaid);
     const accountId = await resolveAccountIdForOutflowClient(client, options.accountId, amountPaid);
 
+    let supplierName: string | null = null;
+    if (options.partyId) {
+      const party = await client.query(
+        `SELECT name FROM ${T.parties} WHERE id = $1`,
+        [options.partyId]
+      );
+      supplierName = (party.rows[0]?.name as string) ?? null;
+    }
+
     await client.query(
       `INSERT INTO ${T.purchases}
        (id, purchase_date, supplier, party_id, notes, total_amount, payment_status, amount_paid, due_date, account_id)
@@ -66,7 +74,7 @@ export async function recordPurchase(
       [
         purchaseId,
         purchaseDate,
-        supplier || null,
+        supplierName,
         options.partyId || null,
         notes || null,
         totalAmount,

@@ -2,31 +2,6 @@ import { query, queryOne } from "@/lib/db";
 import { T } from "@/lib/tables";
 import { ACTIVE_PURCHASE } from "@/lib/query-filters";
 
-export async function getLastPurchaseSupplier(): Promise<string | null> {
-  const row = await queryOne<{ supplier: string }>(
-    `SELECT supplier FROM ${T.purchases}
-     WHERE supplier IS NOT NULL AND TRIM(supplier) != ''
-     ORDER BY created_at DESC LIMIT 1`
-  );
-  return row?.supplier ?? null;
-}
-
-export async function getSupplierSuggestions(): Promise<string[]> {
-  const fromPurchases = await query<{ supplier: string }>(
-    `SELECT DISTINCT supplier FROM ${T.purchases}
-     WHERE supplier IS NOT NULL AND TRIM(supplier) != ''`
-  );
-  const fromProducts = await query<{ supplier: string }>(
-    `SELECT DISTINCT supplier FROM ${T.products}
-     WHERE supplier IS NOT NULL AND TRIM(supplier) != ''`
-  );
-  const set = new Set<string>();
-  for (const r of [...fromPurchases, ...fromProducts]) {
-    if (r.supplier.trim()) set.add(r.supplier.trim());
-  }
-  return Array.from(set).sort();
-}
-
 function buildDateFilter(dateFrom?: string, dateTo?: string, activeOnly = true) {
   const conditions: string[] = activeOnly ? [ACTIVE_PURCHASE] : [];
   const params: unknown[] = [];

@@ -32,7 +32,6 @@ export const purchaseItemSchema = z.object({
 
 export const purchaseSchema = z.object({
   purchase_date: z.string().min(1, "Date is required"),
-  supplier: z.string().optional(),
   party_id: z.string().uuid().optional().or(z.literal("")),
   account_id: z.string().uuid().optional().or(z.literal("")),
   amount_paid: z.coerce.number().min(0).optional(),

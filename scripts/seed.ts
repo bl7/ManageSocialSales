@@ -85,12 +85,12 @@ async function seed() {
 
   console.log("Sample products created.");
 
-  await recordPurchase("2025-01-15", "Nepal Textiles", "Initial stock order", [
+  await recordPurchase("2025-01-15", "Initial stock order", [
     { variant_id: variant1Id, quantity: 20, unit_cost: 8 },
     { variant_id: variant2Id, quantity: 15, unit_cost: 8 },
   ]);
 
-  await recordPurchase("2025-01-20", "Denim Co", "Jeans restock", [
+  await recordPurchase("2025-01-20", "Jeans restock", [
     { variant_id: variant3Id, quantity: 10, unit_cost: 15 },
     { variant_id: variant4Id, quantity: 12, unit_cost: 15 },
   ]);
