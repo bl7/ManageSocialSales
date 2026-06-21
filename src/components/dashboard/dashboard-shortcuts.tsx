@@ -37,7 +37,9 @@ export function DashboardShortcuts() {
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-primary">
                 <Icon className="h-5 w-5" />
               </span>
-              <span className="text-xs font-medium leading-tight">{item.label}</span>
+              <span className="text-xs font-medium leading-tight">
+                {item.label}
+              </span>
             </Link>
           );
         })}

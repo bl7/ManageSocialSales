@@ -40,7 +40,11 @@ export function StatCards({ stats }: StatCardsProps) {
     danger?: boolean;
     highlight?: boolean;
   }[] = [
-    { title: "Inventory Value", value: formatCurrency(stats.inventory_value, c), icon: <DollarSign className="h-5 w-5" /> },
+    {
+      title: "Inventory Value",
+      value: formatCurrency(stats.inventory_value, c),
+      icon: <DollarSign className="h-5 w-5" />,
+    },
     {
       title: "Revenue This Month",
       value: formatCurrency(stats.revenue_this_month, c),
@@ -88,7 +92,8 @@ export function StatCards({ stats }: StatCardsProps) {
             className={cn(
               "transition-all hover:shadow-md",
               card.href && "cursor-pointer hover:border-primary/40",
-              card.highlight && "border-primary/30 bg-gradient-to-br from-teal-50/80 to-white"
+              card.highlight &&
+                "border-primary/30 bg-gradient-to-br from-teal-50/80 to-white",
             )}
           >
             <div className="flex items-start justify-between">
@@ -99,7 +104,7 @@ export function StatCards({ stats }: StatCardsProps) {
               className={cn(
                 card.warn && "text-warning",
                 card.danger && "text-danger",
-                card.highlight && "text-primary"
+                card.highlight && "text-primary",
               )}
             >
               {card.value}
@@ -110,7 +115,9 @@ export function StatCards({ stats }: StatCardsProps) {
           </Card>
         );
         return card.href ? (
-          <Link key={card.title} href={card.href}>{inner}</Link>
+          <Link key={card.title} href={card.href}>
+            {inner}
+          </Link>
         ) : (
           <div key={card.title}>{inner}</div>
         );

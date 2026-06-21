@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
 import { TransactionSummaryCards } from "@/components/transactions/transaction-summary-cards";
+import { AccountBalancesGrid } from "@/components/transactions/account-balances-grid";
 import { TransferForm } from "@/components/forms/transfer-form";
 import { WithdrawalForm } from "@/components/forms/withdrawal-form";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -89,6 +90,12 @@ export default async function TransactionsPage({ searchParams }: Props) {
           </Link>
         </div>
       </PageHeader>
+
+      <AccountBalancesGrid
+        accounts={accounts}
+        currency={currency}
+        activeAccountId={params.account_id}
+      />
 
       <ListFilterBar>
         <TransactionFilters
