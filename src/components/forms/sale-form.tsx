@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { recordSaleAction } from "@/actions/inventory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { VariantPicker } from "@/components/ui/variant-picker";
@@ -34,7 +35,6 @@ interface LineItem {
 }
 
 const PLATFORMS = ["Instagram", "Facebook", "TikTok", "WhatsApp", "Walk-in", "Other"];
-const MONEY_PATTERN = /^\d*\.?\d{0,2}$/;
 
 interface Customer {
   id: string;
@@ -255,21 +255,10 @@ export function SaleForm({
                   </FormGroup>
                   <FormGroup>
                     <Label>Sale Price *</Label>
-                    <Input
-                      type="text"
-                      inputMode="decimal"
+                    <MoneyInput
                       required
                       value={item.unit_sale_price}
-                      onChange={(e) => {
-                        const next = e.target.value.trim();
-                        if (next === "") {
-                          updateItem(i, "unit_sale_price", 0);
-                          return;
-                        }
-                        if (!MONEY_PATTERN.test(next)) return;
-                        const parsed = Number(next);
-                        if (!Number.isNaN(parsed)) updateItem(i, "unit_sale_price", parsed);
-                      }}
+                      onValueChange={(v) => updateItem(i, "unit_sale_price", v)}
                     />
                   </FormGroup>
                   <div className="flex items-end justify-between sm:col-span-4">
@@ -298,22 +287,11 @@ export function SaleForm({
             <div className="grid gap-4 sm:grid-cols-2">
               <FormGroup>
                 <Label htmlFor="delivery_charge">Delivery Charge</Label>
-                <Input
+                <MoneyInput
                   id="delivery_charge"
                   name="delivery_charge"
-                  type="text"
-                  inputMode="decimal"
-                  value={deliveryCharge || ""}
-                  onChange={(e) => {
-                    const next = e.target.value.trim();
-                    if (next === "") {
-                      setDeliveryCharge(0);
-                      return;
-                    }
-                    if (!MONEY_PATTERN.test(next)) return;
-                    const parsed = Number(next);
-                    if (!Number.isNaN(parsed)) setDeliveryCharge(parsed);
-                  }}
+                  value={deliveryCharge}
+                  onValueChange={setDeliveryCharge}
                 />
               </FormGroup>
               <FormGroup>
@@ -357,21 +335,10 @@ export function SaleForm({
               {paymentMode === "partial" && (
                 <FormGroup>
                   <Label htmlFor="amount_paid_input">Amount Paid</Label>
-                  <Input
+                  <MoneyInput
                     id="amount_paid_input"
-                    type="text"
-                    inputMode="decimal"
-                    value={amountPaid || ""}
-                    onChange={(e) => {
-                      const next = e.target.value.trim();
-                      if (next === "") {
-                        setAmountPaid(0);
-                        return;
-                      }
-                      if (!MONEY_PATTERN.test(next)) return;
-                      const parsed = Number(next);
-                      if (!Number.isNaN(parsed)) setAmountPaid(parsed);
-                    }}
+                    value={amountPaid}
+                    onValueChange={setAmountPaid}
                   />
                 </FormGroup>
               )}

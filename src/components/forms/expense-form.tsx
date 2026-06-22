@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { recordExpenseAction } from "@/actions/expenses";
 import { quickCreateExpenseCategoryAction } from "@/actions/expense-categories";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Textarea } from "@/components/ui/textarea";
 import { CreatableSelect, type CreatableOption } from "@/components/ui/creatable-select";
 import { AccountSelect } from "@/components/ui/account-select";
@@ -82,7 +82,7 @@ export function ExpenseForm({
           </FormGroup>
           <FormGroup>
             <Label htmlFor="amount">Amount *</Label>
-            <Input id="amount" name="amount" type="number" min="0.01" step="0.01" required />
+            <MoneyInput id="amount" name="amount" required />
           </FormGroup>
           <AccountSelect accounts={accounts} label="Paid from account" />
           <FormGroup>

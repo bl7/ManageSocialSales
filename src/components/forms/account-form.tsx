@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveAccountAction, deleteAccountAction } from "@/actions/accounts";
 import { Button } from "@/components/ui/button";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { PageHeader, ErrorMessage, FormGroup, Label } from "@/components/ui/page";
@@ -86,11 +87,9 @@ export function AccountForm({ account, currency = "Rs.", ledgerCount = 0 }: Acco
           </FormGroup>
           <FormGroup>
             <Label htmlFor="opening_balance">Opening Balance</Label>
-            <Input
+            <MoneyInput
               id="opening_balance"
               name="opening_balance"
-              type="number"
-              step="0.01"
               defaultValue={account?.opening_balance ?? "0"}
             />
             {account && ledgerCount > 0 && (

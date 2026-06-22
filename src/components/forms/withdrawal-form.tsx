@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { recordProfitWithdrawalAction } from "@/actions/account-movements";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { AccountSelect } from "@/components/ui/account-select";
@@ -72,7 +72,7 @@ export function WithdrawalForm({
 
           <FormGroup>
             <Label htmlFor="amount">Amount *</Label>
-            <Input id="amount" name="amount" type="number" min="0.01" step="0.01" required />
+            <MoneyInput id="amount" name="amount" required />
           </FormGroup>
 
           <AccountSelect accounts={accounts} label="Withdraw from account *" />

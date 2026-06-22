@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { saveProductAction } from "@/actions/products";
 import { quickCreateCategoryAction } from "@/actions/categories";
 import { Button } from "@/components/ui/button";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CreatableSelect, type CreatableOption } from "@/components/ui/creatable-select";
@@ -174,13 +175,17 @@ export function ProductForm({ product, variants: initialVariants, categories: in
                 </FormGroup>
                 <FormGroup>
                   <Label>Cost Price</Label>
-                  <Input type="number" min="0" step="0.01" value={v.default_cost_price}
-                    onChange={(e) => updateVariant(i, "default_cost_price", parseFloat(e.target.value) || 0)} />
+                  <MoneyInput
+                    value={v.default_cost_price}
+                    onValueChange={(val) => updateVariant(i, "default_cost_price", val)}
+                  />
                 </FormGroup>
                 <FormGroup>
                   <Label>Selling Price</Label>
-                  <Input type="number" min="0" step="0.01" value={v.default_selling_price}
-                    onChange={(e) => updateVariant(i, "default_selling_price", parseFloat(e.target.value) || 0)} />
+                  <MoneyInput
+                    value={v.default_selling_price}
+                    onValueChange={(val) => updateVariant(i, "default_selling_price", val)}
+                  />
                 </FormGroup>
                 <FormGroup>
                   <Label>Reorder Level</Label>

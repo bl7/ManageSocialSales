@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { recordPurchaseAction } from "@/actions/inventory";
 import { Button } from "@/components/ui/button";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { VariantPicker } from "@/components/ui/variant-picker";
@@ -31,7 +32,6 @@ interface LineItem {
   quantity: number;
   unit_cost: number;
 }
-const MONEY_PATTERN = /^\d*\.?\d{0,2}$/;
 
 interface PurchaseFormProps {
   variants: Variant[];
@@ -182,21 +182,10 @@ export function PurchaseForm({
             {paymentMode === "partial" && (
               <FormGroup>
                 <Label htmlFor="amount_paid_input">Amount Paid</Label>
-                <Input
+                <MoneyInput
                   id="amount_paid_input"
-                  type="text"
-                  inputMode="decimal"
-                  value={amountPaid || ""}
-                  onChange={(e) => {
-                    const next = e.target.value.trim();
-                    if (next === "") {
-                      setAmountPaid(0);
-                      return;
-                    }
-                    if (!MONEY_PATTERN.test(next)) return;
-                    const parsed = Number(next);
-                    if (!Number.isNaN(parsed)) setAmountPaid(parsed);
-                  }}
+                  value={amountPaid}
+                  onValueChange={setAmountPaid}
                 />
               </FormGroup>
             )}
@@ -243,21 +232,10 @@ export function PurchaseForm({
                 </FormGroup>
                 <FormGroup>
                   <Label>Unit Cost *</Label>
-                  <Input
-                    type="text"
-                    inputMode="decimal"
+                  <MoneyInput
                     required
                     value={item.unit_cost}
-                    onChange={(e) => {
-                      const next = e.target.value.trim();
-                      if (next === "") {
-                        updateItem(i, "unit_cost", 0);
-                        return;
-                      }
-                      if (!MONEY_PATTERN.test(next)) return;
-                      const parsed = Number(next);
-                      if (!Number.isNaN(parsed)) updateItem(i, "unit_cost", parsed);
-                    }}
+                    onValueChange={(v) => updateItem(i, "unit_cost", v)}
                   />
                 </FormGroup>
                 <div className="flex items-end justify-between sm:col-span-4">

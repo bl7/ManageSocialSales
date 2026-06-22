@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { savePartyAction } from "@/actions/parties";
 import { Button } from "@/components/ui/button";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
@@ -80,7 +81,7 @@ export function PartyForm({ party }: PartyFormProps) {
           {!party && (
             <FormGroup>
               <Label htmlFor="opening_balance">Opening Balance (udhar)</Label>
-              <Input id="opening_balance" name="opening_balance" type="number" min="0" step="0.01" defaultValue="0" />
+              <MoneyInput id="opening_balance" name="opening_balance" defaultValue="0" />
             </FormGroup>
           )}
           <FormGroup>

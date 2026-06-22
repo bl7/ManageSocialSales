@@ -10,7 +10,7 @@ import {
 } from "@/actions/investments";
 import { quickCreateInvestorAction } from "@/actions/investors";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { CreatableSelect, type CreatableOption } from "@/components/ui/creatable-select";
@@ -199,13 +199,10 @@ export function InvestmentForm({
                       <option key={a.id} value={a.id}>{a.name}</option>
                     ))}
                   </Select>
-                  <Input
-                    type="number"
-                    min="0.01"
-                    step="0.01"
+                  <MoneyInput
                     placeholder="Amount"
-                    value={row.amount || ""}
-                    onChange={(e) => updateRow(index, "amount", parseFloat(e.target.value) || 0)}
+                    value={row.amount}
+                    onValueChange={(v) => updateRow(index, "amount", v)}
                     required
                   />
                   <Button
