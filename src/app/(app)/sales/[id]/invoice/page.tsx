@@ -6,6 +6,7 @@ import { PrintButton } from "@/components/sales/print-button";
 import { formatCurrency } from "@/lib/utils";
 import { getDateFormatters } from "@/lib/date-preference.server";
 import { DEFAULT_BUSINESS_NAME } from "@/lib/branding";
+import { AppLogo } from "@/components/branding/app-logo";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -37,10 +38,13 @@ export default async function InvoicePage({ params }: Props) {
 
       <div className="mx-auto max-w-2xl rounded-xl border border-border bg-card p-8 print:border-0 print:shadow-none">
         <div className="mb-8 flex items-start justify-between border-b border-border pb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-primary">{settings?.business_name || DEFAULT_BUSINESS_NAME}</h1>
-            {settings?.address && <p className="mt-1 text-sm text-muted">{settings.address}</p>}
-            {settings?.phone && <p className="text-sm text-muted">{settings.phone}</p>}
+          <div className="flex items-start gap-4">
+            <AppLogo variant="black" size="logo" className="h-14 w-auto max-w-[200px] shrink-0" />
+            <div>
+              <h1 className="text-2xl font-bold text-primary">{settings?.business_name || DEFAULT_BUSINESS_NAME}</h1>
+              {settings?.address && <p className="mt-1 text-sm text-muted">{settings.address}</p>}
+              {settings?.phone && <p className="text-sm text-muted">{settings.phone}</p>}
+            </div>
           </div>
           <div className="text-right">
             <p className="text-lg font-bold">INVOICE</p>

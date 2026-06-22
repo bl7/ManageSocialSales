@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useFormatDate } from "@/components/providers/date-preference-provider";
 import { logoutAction } from "@/actions/auth";
+import { AppLogo } from "@/components/branding/app-logo";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import {
@@ -121,16 +122,15 @@ export function Sidebar({
               onError={() => setLogoError(true)}
             />
           ) : (
-            <div
+            <AppLogo
+              variant="white"
+              size={collapsed && !mobile ? "icon" : "logo"}
+              alt={businessName}
               className={cn(
-                "flex shrink-0 items-center justify-center rounded-xl bg-primary font-bold text-white",
-                collapsed && !mobile
-                  ? "h-10 w-10 text-lg"
-                  : "h-12 w-12 text-xl",
+                "shrink-0",
+                collapsed && !mobile ? "h-10 w-10" : "h-14 w-auto max-w-[180px]",
               )}
-            >
-              {businessName.charAt(0).toUpperCase()}
-            </div>
+            />
           )}
           {(!collapsed || mobile) && (
             <h2 className="mt-3 line-clamp-2 text-sm font-bold leading-snug text-sidebar-foreground">
@@ -244,7 +244,10 @@ export function Sidebar({
   return (
     <>
       <header className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-card px-4 md:hidden">
-        <div className="font-bold text-primary">{businessName}</div>
+        <div className="flex items-center gap-2">
+          <AppLogo variant="black" className="h-8 w-8" alt={businessName} />
+          <span className="line-clamp-1 font-bold text-primary">{businessName}</span>
+        </div>
         <button
           type="button"
           onClick={() => setOpen(!open)}
