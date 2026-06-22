@@ -10,7 +10,8 @@ import { MovementBadge } from "@/components/ui/badge";
 import { ExportButton } from "@/components/export/export-button";
 import { LedgerFilters } from "@/components/ledger/ledger-filters";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
-import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { getDateFormatters, getDateCalendar } from "@/lib/date-preference.server";
 
 interface Props {
   searchParams: Promise<{
@@ -26,7 +27,9 @@ interface Props {
 
 export default async function LedgerPage({ searchParams }: Props) {
   const params = await searchParams;
-  const { from: dateFrom, to: dateTo } = resolveLedgerDateRange(params);
+  const calendar = await getDateCalendar();
+  const { formatDateTime } = await getDateFormatters();
+  const { from: dateFrom, to: dateTo } = resolveLedgerDateRange(params, calendar);
   const filters = { ...params, dateFrom, dateTo };
   const [entries, products, settings] = await Promise.all([
     getLedgerEntries(filters),
@@ -55,8 +58,8 @@ export default async function LedgerPage({ searchParams }: Props) {
       {entries.length === 0 ? (
         <EmptyState
           message="No stock movements match your filters."
-          actionLabel="Record a sale"
-          actionHref="/sales/new"
+          actionLabel="Open POS"
+          actionHref="/pos/new"
         />
       ) : (
         <DataTable>

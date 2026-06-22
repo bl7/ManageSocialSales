@@ -7,19 +7,25 @@ import { Button } from "@/components/ui/button";
 import { PeriodFilters } from "@/components/ui/period-filters";
 import { PurchasesSummaryCards } from "@/components/purchases/purchases-summary-cards";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { getDateFormatters, getDateCalendar } from "@/lib/date-preference.server";
 
 interface Props {
   searchParams: Promise<{ dateFrom?: string; dateTo?: string; preset?: string }>;
 }
 
-function resolveDates(params: { dateFrom?: string; dateTo?: string; preset?: string }) {
-  return resolveListDateRange(params);
+function resolveDates(
+  params: { dateFrom?: string; dateTo?: string; preset?: string },
+  calendar: "AD" | "BS"
+) {
+  return resolveListDateRange(params, { dateCalendar: calendar });
 }
 
 export default async function PurchasesPage({ searchParams }: Props) {
   const params = await searchParams;
-  const { from: dateFrom, to: dateTo } = resolveDates(params);
+  const calendar = await getDateCalendar();
+  const { formatDate } = await getDateFormatters();
+  const { from: dateFrom, to: dateTo } = resolveDates(params, calendar);
   const [summary, purchases, settings] = await Promise.all([
     getPurchasesSummary(dateFrom, dateTo),
     getPurchasesList(dateFrom, dateTo),

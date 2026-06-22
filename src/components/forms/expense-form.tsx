@@ -19,7 +19,12 @@ interface ExpenseFormProps {
   accounts: { id: string; name: string }[];
 }
 
-export function ExpenseForm({ categories: initialCategories, accounts }: ExpenseFormProps) {
+export function ExpenseForm({
+  categories: initialCategories,
+  accounts,
+  compact = false,
+  redirectTo = "/expenses",
+}: ExpenseFormProps & { compact?: boolean; redirectTo?: string | false }) {
   const router = useRouter();
   const today = todayISODate();
   const [state, action, pending] = useActionState(recordExpenseAction, null);
@@ -31,9 +36,10 @@ export function ExpenseForm({ categories: initialCategories, accounts }: Expense
   useEffect(() => {
     if (state?.success) {
       toast.success("Expense recorded");
-      router.push("/expenses");
+      if (redirectTo) router.push(redirectTo);
+      else router.refresh();
     }
-  }, [state, router]);
+  }, [state, router, redirectTo]);
 
   async function handleCreateCategory(name: string) {
     const result = await quickCreateExpenseCategoryAction(name);
@@ -50,7 +56,9 @@ export function ExpenseForm({ categories: initialCategories, accounts }: Expense
 
   return (
     <div>
-      <PageHeader title="Record Expense" description="Business expenses (rent, shipping, etc.)" />
+      {!compact && (
+        <PageHeader title="Record Expense" description="Business expenses (rent, shipping, etc.)" />
+      )}
 
       <form action={action} className="max-w-lg">
         {state && !state.success && <div className="mb-4"><ErrorMessage message={state.error} /></div>}

@@ -1,11 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { MovementBadge } from "@/components/ui/badge";
-import { formatDateTime } from "@/lib/utils";
+import { useFormatDate } from "@/components/providers/date-preference-provider";
 import type { LedgerEntry } from "@/types";
 import { ArrowRight } from "lucide-react";
 
 export function RecentActivity({ entries }: { entries: LedgerEntry[] }) {
+  const { formatDateTime } = useFormatDate();
+
   return (
     <Card>
       <div className="mb-4 flex items-center justify-between">

@@ -13,7 +13,8 @@ import { PageHeader } from "@/components/ui/page";
 import { Card } from "@/components/ui/card";
 import { ReportsFilters } from "@/components/reports/reports-filters";
 import { resolveListDateRange } from "@/lib/date-ranges";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { getDateFormatters, getDateCalendar } from "@/lib/date-preference.server";
 
 interface Props {
   searchParams: Promise<{ dateFrom?: string; dateTo?: string; preset?: string; tab?: string }>;
@@ -22,7 +23,9 @@ interface Props {
 export default async function ReportsPage({ searchParams }: Props) {
   const params = await searchParams;
   const tab = ["sales", "profit", "inventory", "credit"].includes(params.tab || "") ? (params.tab as string) : "sales";
-  const { from: dateFrom, to: dateTo } = resolveListDateRange(params);
+  const calendar = await getDateCalendar();
+  const { formatDate } = await getDateFormatters();
+  const { from: dateFrom, to: dateTo } = resolveListDateRange(params, { dateCalendar: calendar });
   const [bestSelling, slowMoving, lowStock, outOfStock, valuation, revenue, profit, settings] =
     await Promise.all([
       getBestSellingProducts(dateFrom, dateTo),

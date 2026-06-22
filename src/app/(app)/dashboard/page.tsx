@@ -9,21 +9,25 @@ import { DashboardHomeTiles } from "@/components/dashboard/dashboard-home-tiles"
 import { DashboardShortcuts } from "@/components/dashboard/dashboard-shortcuts";
 import { CashflowChart } from "@/components/dashboard/cashflow-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { formatNepaliMonthLong } from "@/lib/nepali-date";
+import { getDateFormatters, getDateCalendar } from "@/lib/date-preference.server";
+import { DashboardInsightAlerts } from "@/components/insights/dashboard-insight-alerts";
+import { getDashboardInsightAlerts } from "@/lib/queries/insights";
 import { Scale } from "lucide-react";
 
 export default async function DashboardPage() {
-  const [stats, settings, totalBalance, cashflow, activity, lowStock] = await Promise.all([
-    getDashboardStats(),
+  const [{ formatMonthLong }, stats, settings, totalBalance, cashflow, activity, lowStock, insightAlerts] = await Promise.all([
+    getDateFormatters(),
+    getDashboardStats(await getDateCalendar()),
     getSettings(),
     getTotalAccountBalance(),
     getCashflowChartData(7),
     getRecentActivity(8),
     getLowStockReport(),
+    getDashboardInsightAlerts(),
   ]);
 
   const currency = settings?.currency ?? stats.currency ?? "Rs.";
-  const monthLabel = formatNepaliMonthLong();
+  const monthLabel = formatMonthLong();
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
 
@@ -47,6 +51,8 @@ export default async function DashboardPage() {
         }}
         monthLabel={monthLabel}
       />
+
+      <DashboardInsightAlerts alerts={insightAlerts} />
 
       <DashboardShortcuts />
 

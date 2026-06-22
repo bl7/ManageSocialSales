@@ -1,6 +1,7 @@
 import { query, queryOne } from "@/lib/db";
 import { getTotalReceivables, getTotalPayables } from "@/lib/queries/parties";
-import { getCurrentNepaliMonthRange } from "@/lib/nepali-date";
+import { getCurrentMonthRange } from "@/lib/date-ranges";
+import type { DateCalendar } from "@/lib/date-calendar";
 import { T } from "@/lib/tables";
 
 export async function getSettings() {
@@ -14,10 +15,11 @@ export async function getSettings() {
     business_email: string | null;
     logo_url: string | null;
     invoice_prefix: string | null;
+    date_calendar: string;
   }>(`SELECT * FROM ${T.settings} LIMIT 1`);
 }
 
-export async function getDashboardStats() {
+export async function getDashboardStats(dateCalendar: "AD" | "BS" = "BS") {
   const settings = await getSettings();
   const currency = settings?.currency ?? "$";
 
@@ -72,7 +74,7 @@ export async function getDashboardStats() {
     WHERE s.current_stock > 0
   `);
 
-  const { from: monthStartStr } = getCurrentNepaliMonthRange();
+  const { from: monthStartStr } = getCurrentMonthRange(dateCalendar);
 
   const salesMonth = await queryOne<{
     sales_count: string;

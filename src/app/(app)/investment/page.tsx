@@ -12,7 +12,8 @@ import { InvestmentForm } from "@/components/forms/investment-form";
 import { InvestorForm } from "@/components/forms/investor-form";
 import { InvestmentTabs } from "@/components/investment/investment-tabs";
 import { DeleteInvestorButton } from "@/components/investment/delete-investor-button";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { getDateFormatters } from "@/lib/date-preference.server";
 import { getInvestorById } from "@/lib/queries/investors";
 
 interface Props {
@@ -57,6 +58,7 @@ export default async function InvestmentPage({ searchParams }: Props) {
     getInvestmentSummary(),
     getSettings(),
   ]);
+  const { formatDate } = await getDateFormatters();
 
   const currency = settings?.currency ?? "Rs.";
   const tab = params.tab ?? "overview";

@@ -34,6 +34,7 @@ interface LineItem {
 }
 
 const PLATFORMS = ["Instagram", "Facebook", "TikTok", "WhatsApp", "Walk-in", "Other"];
+const MONEY_PATTERN = /^\d*\.?\d{0,2}$/;
 
 interface Customer {
   id: string;
@@ -46,11 +47,13 @@ export function SaleForm({
   customers = [],
   paymentMethods = [],
   currency = "Rs.",
+  compact = false,
 }: {
   variants: Variant[];
   customers?: Customer[];
   paymentMethods?: { id: string; name: string }[];
   currency?: string;
+  compact?: boolean;
 }) {
   const router = useRouter();
   const today = todayISODate();
@@ -133,6 +136,10 @@ export function SaleForm({
         setError("Please select a product variant for every line item.");
         return false;
       }
+      if (!Number.isFinite(item.unit_sale_price) || item.unit_sale_price < 0) {
+        setError("Enter a valid sale price for every line item.");
+        return false;
+      }
       const stock = getStock(item.variant_id);
       if (item.quantity > stock) {
         setError(`Cannot sell ${item.quantity} units. Only ${stock} available.`);
@@ -145,6 +152,10 @@ export function SaleForm({
     }
     if (paymentMode === "partial" && (amountPaid <= 0 || amountPaid >= total)) {
       setError("Partial payment must be greater than 0 and less than total.");
+      return false;
+    }
+    if (!Number.isFinite(deliveryCharge) || deliveryCharge < 0) {
+      setError("Enter a valid delivery charge.");
       return false;
     }
     setError("");
@@ -169,7 +180,7 @@ export function SaleForm({
 
     const result = await recordSaleAction(null, formData);
     if (result?.success) {
-      toast.success("Sale recorded successfully");
+      toast.success(compact ? "Sale recorded" : "POS sale completed");
       form.reset();
       setItems([{ variant_id: "", quantity: 1, unit_sale_price: 0 }]);
       setDeliveryCharge(0);
@@ -188,9 +199,11 @@ export function SaleForm({
 
   return (
     <div>
-      <PageHeader title="Record Sale" description="Record a sale from Instagram, WhatsApp, or other channels" />
+      {!compact && (
+        <PageHeader title="POS" description="Point of sale — record a customer order" />
+      )}
 
-      <form id="sale-form" onSubmit={handleSubmit} className="max-w-3xl">
+      <form id="sale-form" onSubmit={handleSubmit} className={compact ? "max-w-3xl" : "max-w-3xl"}>
         {error && <div className="mb-4"><ErrorMessage message={error} /></div>}
 
         <fieldset disabled={pending} className="disabled:opacity-60">
@@ -242,8 +255,22 @@ export function SaleForm({
                   </FormGroup>
                   <FormGroup>
                     <Label>Sale Price *</Label>
-                    <Input type="number" min="0" step="0.01" required value={item.unit_sale_price}
-                      onChange={(e) => updateItem(i, "unit_sale_price", parseFloat(e.target.value) || 0)} />
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      required
+                      value={item.unit_sale_price}
+                      onChange={(e) => {
+                        const next = e.target.value.trim();
+                        if (next === "") {
+                          updateItem(i, "unit_sale_price", 0);
+                          return;
+                        }
+                        if (!MONEY_PATTERN.test(next)) return;
+                        const parsed = Number(next);
+                        if (!Number.isNaN(parsed)) updateItem(i, "unit_sale_price", parsed);
+                      }}
+                    />
                   </FormGroup>
                   <div className="flex items-end justify-between sm:col-span-4">
                     <span className="text-sm text-muted">
@@ -274,11 +301,19 @@ export function SaleForm({
                 <Input
                   id="delivery_charge"
                   name="delivery_charge"
-                  type="number"
-                  min="0"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   value={deliveryCharge || ""}
-                  onChange={(e) => setDeliveryCharge(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const next = e.target.value.trim();
+                    if (next === "") {
+                      setDeliveryCharge(0);
+                      return;
+                    }
+                    if (!MONEY_PATTERN.test(next)) return;
+                    const parsed = Number(next);
+                    if (!Number.isNaN(parsed)) setDeliveryCharge(parsed);
+                  }}
                 />
               </FormGroup>
               <FormGroup>
@@ -324,12 +359,19 @@ export function SaleForm({
                   <Label htmlFor="amount_paid_input">Amount Paid</Label>
                   <Input
                     id="amount_paid_input"
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    max={total || undefined}
+                    type="text"
+                    inputMode="decimal"
                     value={amountPaid || ""}
-                    onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const next = e.target.value.trim();
+                      if (next === "") {
+                        setAmountPaid(0);
+                        return;
+                      }
+                      if (!MONEY_PATTERN.test(next)) return;
+                      const parsed = Number(next);
+                      if (!Number.isNaN(parsed)) setAmountPaid(parsed);
+                    }}
                   />
                 </FormGroup>
               )}
@@ -353,8 +395,10 @@ export function SaleForm({
           </div>
 
           <div className="mt-6 flex gap-3">
-            <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Record Sale"}</Button>
-            <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+            <Button type="submit" disabled={pending}>{pending ? "Saving..." : compact ? "Complete sale" : "Complete POS"}</Button>
+            {!compact && (
+              <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+            )}
           </div>
         </fieldset>
       </form>
@@ -374,16 +418,16 @@ export function SaleForm({
             }}
             className="px-6"
           >
-            Save Sale
+            Save POS
           </Button>
         </div>
       </div>
 
       <ConfirmDialog
         open={confirmOpen}
-        title="Confirm sale"
-        message={`Record this sale for ${formatCurrency(total, currency)}${deliveryCharge > 0 ? ` (incl. ${formatCurrency(deliveryCharge, currency)} delivery)` : ""}${creditDue > 0 ? ` — ${formatCurrency(creditDue, currency)} on credit` : ""}?`}
-        confirmLabel="Record Sale"
+        title="Confirm POS sale"
+        message={`Complete this sale for ${formatCurrency(total, currency)}${deliveryCharge > 0 ? ` (incl. ${formatCurrency(deliveryCharge, currency)} delivery)` : ""}${creditDue > 0 ? ` — ${formatCurrency(creditDue, currency)} on credit` : ""}?`}
+        confirmLabel={compact ? "Complete sale" : "Complete POS"}
         onConfirm={confirmSale}
         onCancel={() => setConfirmOpen(false)}
         loading={pending}

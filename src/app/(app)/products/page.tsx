@@ -102,7 +102,7 @@ export default async function ProductsPage({ searchParams }: Props) {
                   <div><p className="text-xs text-muted">Price</p><p>{formatCurrency(p.default_selling_price, currency)}</p></div>
                 </div>
                 <div className="mt-4 flex gap-2">
-                  <Link href={`/sales/new?product=${p.product_id}`}><Button size="sm">Sale</Button></Link>
+                  <Link href={`/pos/new?product=${p.product_id}`}><Button size="sm">POS</Button></Link>
                   <Link href={`/purchases/new?product=${p.product_id}`}><Button size="sm" variant="outline">Purchase</Button></Link>
                   <Link href={`/products/${p.product_id}`}><Button size="sm" variant="ghost">View</Button></Link>
                 </div>

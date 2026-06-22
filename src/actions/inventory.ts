@@ -5,12 +5,14 @@ import { requireUser } from "@/actions/auth";
 import {
   purchaseSchema,
   saleSchema,
+  saleReturnSchema,
   adjustmentSchema,
   formatZodErrors,
 } from "@/lib/validators";
 import {
   recordPurchase,
   recordSale,
+  recordSaleReturn,
   recordAdjustment,
   voidSale,
   voidPurchase,
@@ -121,6 +123,8 @@ export async function recordSaleAction(
       }
     );
     revalidatePath("/sales");
+    revalidatePath("/pos");
+    revalidatePath("/quick-entry");
     revalidatePath("/dashboard");
     revalidatePath("/transactions");
     return { success: true };
@@ -139,6 +143,7 @@ export async function voidSaleAction(saleId: string, voidReason: string): Promis
   try {
     await voidSale(saleId, voidReason.trim());
     revalidatePath("/sales");
+    revalidatePath("/pos");
     revalidatePath("/ledger");
     revalidatePath("/reports");
     revalidatePath("/dashboard");
@@ -150,6 +155,56 @@ export async function voidSaleAction(saleId: string, voidReason: string): Promis
       return { success: false, error: message };
     }
     return { success: false, error: "Failed to void sale" };
+  }
+}
+
+export async function recordSaleReturnAction(
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  await requireUser();
+
+  let items: { sale_item_id: string; quantity: number }[] = [];
+  try {
+    items = JSON.parse(String(formData.get("items") || "[]"));
+  } catch {
+    return { success: false, error: "Invalid return items" };
+  }
+
+  const parsed = saleReturnSchema.safeParse({
+    sale_id: formData.get("sale_id"),
+    return_date: formData.get("return_date"),
+    account_id: formData.get("account_id") || "",
+    notes: formData.get("notes") || undefined,
+    items,
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: formatZodErrors(parsed.error) };
+  }
+
+  try {
+    const id = await recordSaleReturn(
+      parsed.data.sale_id,
+      parsed.data.return_date,
+      parsed.data.items,
+      {
+        accountId: parsed.data.account_id || undefined,
+        notes: parsed.data.notes,
+      }
+    );
+    revalidatePath(`/sales/${parsed.data.sale_id}`);
+    revalidatePath("/sales");
+    revalidatePath("/ledger");
+    revalidatePath("/reports");
+    revalidatePath("/dashboard");
+    revalidatePath("/transactions");
+    revalidatePath("/parties");
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    if (message) return { success: false, error: message };
+    return { success: false, error: "Failed to record return" };
   }
 }
 

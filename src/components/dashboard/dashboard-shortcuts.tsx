@@ -8,10 +8,12 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   BarChart3,
+  Zap,
 } from "lucide-react";
 
 const shortcuts = [
-  { href: "/sales/new", label: "Record Sale", icon: ShoppingCart },
+  { href: "/quick-entry", label: "Quick Entry", icon: Zap },
+  { href: "/pos/new", label: "POS", icon: ShoppingCart },
   { href: "/purchases/new", label: "Purchase", icon: PackagePlus },
   { href: "/products/new", label: "Add Product", icon: Plus },
   { href: "/parties/new", label: "Add Party", icon: UserPlus },
@@ -25,7 +27,7 @@ export function DashboardShortcuts() {
   return (
     <section>
       <h2 className="mb-4 text-xl font-semibold">Shortcuts</h2>
-      <div className="grid grid-cols-4 gap-4 sm:grid-cols-4 lg:grid-cols-8">
+      <div className="grid grid-cols-4 gap-4 sm:grid-cols-4 lg:grid-cols-9">
         {shortcuts.map((item) => {
           const Icon = item.icon;
           return (

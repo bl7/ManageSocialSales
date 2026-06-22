@@ -36,7 +36,8 @@ export async function quickCreatePartyAction(
       [id, trimmed, type]
     );
     revalidatePath("/parties");
-    revalidatePath("/sales/new");
+    revalidatePath("/pos/new");
+    revalidatePath("/quick-entry");
     revalidatePath("/purchases/new");
     return { id, name: trimmed, phone: null };
   } catch {

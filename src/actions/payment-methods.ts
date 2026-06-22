@@ -33,7 +33,8 @@ export async function quickCreatePaymentMethodAction(
       [id, parsed.data.name, cashAccountId]
     );
     revalidatePath("/payment-methods");
-    revalidatePath("/sales/new");
+    revalidatePath("/pos/new");
+    revalidatePath("/quick-entry");
     return { id, name: parsed.data.name };
   } catch {
     return { success: false, error: "Failed to create payment method" };
@@ -64,7 +65,8 @@ export async function savePaymentMethodAction(
         [parsed.data.name, accountId, methodId]
       );
       revalidatePath("/payment-methods");
-      revalidatePath("/sales/new");
+      revalidatePath("/pos/new");
+    revalidatePath("/quick-entry");
       return { success: true, id: methodId };
     }
 
@@ -75,7 +77,8 @@ export async function savePaymentMethodAction(
       [id, parsed.data.name, defaultAccountId]
     );
     revalidatePath("/payment-methods");
-    revalidatePath("/sales/new");
+    revalidatePath("/pos/new");
+    revalidatePath("/quick-entry");
     return { success: true, id };
   } catch (err) {
     const message = err instanceof Error ? err.message : "";
@@ -99,7 +102,8 @@ export async function deletePaymentMethodAction(methodId: string): Promise<Actio
       [methodId]
     );
     revalidatePath("/payment-methods");
-    revalidatePath("/sales/new");
+    revalidatePath("/pos/new");
+    revalidatePath("/quick-entry");
     return { success: true };
   } catch {
     return { success: false, error: "Failed to delete payment method" };

@@ -3,7 +3,8 @@ import Link from "next/link";
 import { getSaleById, getSaleItems } from "@/lib/queries/sales";
 import { getSettings } from "@/lib/queries/dashboard";
 import { PrintButton } from "@/components/sales/print-button";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { getDateFormatters } from "@/lib/date-preference.server";
 import { DEFAULT_BUSINESS_NAME } from "@/lib/branding";
 
 interface Props {
@@ -20,6 +21,7 @@ export default async function InvoicePage({ params }: Props) {
 
   if (!sale) notFound();
 
+  const { formatDate } = await getDateFormatters();
   const currency = settings?.currency ?? "Rs.";
   const s = sale as Record<string, unknown>;
   const subtotal = items.reduce((sum, i) => sum + Number(i.line_total), 0);

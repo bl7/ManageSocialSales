@@ -10,7 +10,11 @@ import { PageHeader, EmptyState } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { StockBadge, MovementBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { getProductInsightSummary } from "@/lib/queries/insights";
+import { ProductInsightsCard } from "@/components/insights/product-insights-card";
+import { getDateFormatters, getDateCalendar } from "@/lib/date-preference.server";
+import { getCurrentMonthRange } from "@/lib/date-ranges";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -18,15 +22,19 @@ interface Props {
 
 export default async function ProductDetailPage({ params }: Props) {
   const { id } = await params;
-  const [product, variants, ledger, settings] = await Promise.all([
+  const calendar = await getDateCalendar();
+  const monthRange = getCurrentMonthRange(calendar);
+  const [product, variants, ledger, settings, productInsights] = await Promise.all([
     getProductById(id),
     getProductVariants(id),
     getProductLedger(id),
     getSettings(),
+    getProductInsightSummary(id, monthRange.from, monthRange.to),
   ]);
 
   if (!product) notFound();
 
+  const { formatDateTime } = await getDateFormatters();
   const currency = settings?.currency ?? "Rs.";
   const p = product as Record<string, unknown>;
 
@@ -35,10 +43,12 @@ export default async function ProductDetailPage({ params }: Props) {
       <PageHeader title={p.name as string} description={p.sku ? `SKU: ${p.sku}` : undefined}>
         <Link href={`/products/${id}/edit`}><Button variant="outline">Edit Product</Button></Link>
         <Link href={`/purchases/new?product=${id}`}><Button variant="outline">Record Purchase</Button></Link>
-        <Link href={`/sales/new?product=${id}`}><Button>Record Sale</Button></Link>
+        <Link href={`/pos/new?product=${id}`}><Button>POS</Button></Link>
         <Link href={`/stock-corrections/new?product=${id}`}><Button variant="outline">Stock Correction</Button></Link>
         <Link href={`/ledger?productId=${id}`}><Button variant="outline">View Ledger</Button></Link>
       </PageHeader>
+
+      <ProductInsightsCard summary={productInsights} currency={currency} productId={id} />
 
       <div className="mb-6 grid gap-4 md:grid-cols-2">
         <Card>

@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSaleById, getSaleItems } from "@/lib/queries/sales";
+import { getSaleById, getSaleItems, getSaleReturns } from "@/lib/queries/sales";
 import { getSettings } from "@/lib/queries/dashboard";
+import { getAccounts } from "@/lib/queries/accounts";
 import { PageHeader } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardValue } from "@/components/ui/card";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
 import { VoidSaleButton } from "@/components/sales/void-sale-button";
-import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
+import { SaleReturnForm } from "@/components/sales/sale-return-form";
+import { formatCurrency } from "@/lib/utils";
+import { getDateFormatters } from "@/lib/date-preference.server";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -15,13 +18,17 @@ interface Props {
 
 export default async function SaleDetailPage({ params }: Props) {
   const { id } = await params;
-  const [sale, items, settings] = await Promise.all([
+  const [sale, items, returns, accounts, settings] = await Promise.all([
     getSaleById(id),
     getSaleItems(id),
+    getSaleReturns(id),
+    getAccounts(),
     getSettings(),
   ]);
 
   if (!sale) notFound();
+
+  const { formatDate, formatDateTime } = await getDateFormatters();
 
   const currency = settings?.currency ?? "Rs.";
   const s = sale as Record<string, unknown>;
@@ -50,6 +57,16 @@ export default async function SaleDetailPage({ params }: Props) {
         <Link href={`/sales/${id}/invoice`}><Button variant="outline">Invoice</Button></Link>
         <Link href="/sales"><Button variant="outline">Back to Sales</Button></Link>
       </PageHeader>
+
+      {!isVoided && (
+        <SaleReturnForm
+          saleId={id}
+          items={items}
+          accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
+          currency={currency}
+          amountPaid={Number(s.amount_paid ?? 0)}
+        />
+      )}
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -115,6 +132,7 @@ export default async function SaleDetailPage({ params }: Props) {
             <th className="px-4 py-3">Size</th>
             <th className="px-4 py-3">Color</th>
             <th className="px-4 py-3">Qty</th>
+            <th className="px-4 py-3">Returned</th>
             <th className="px-4 py-3">Unit Price</th>
             <th className="px-4 py-3">Revenue</th>
             <th className="px-4 py-3">Est. Profit</th>
@@ -127,6 +145,7 @@ export default async function SaleDetailPage({ params }: Props) {
               <td className="px-4 py-3">{item.size}</td>
               <td className="px-4 py-3">{item.color}</td>
               <td className="px-4 py-3">{item.quantity}</td>
+              <td className="px-4 py-3">{item.returned_quantity > 0 ? item.returned_quantity : "—"}</td>
               <td className="px-4 py-3">{formatCurrency(item.unit_sale_price, currency)}</td>
               <td className="px-4 py-3">{formatCurrency(item.line_total, currency)}</td>
               <td className="px-4 py-3 text-primary">{formatCurrency(item.estimated_profit, currency)}</td>
@@ -134,6 +153,36 @@ export default async function SaleDetailPage({ params }: Props) {
           ))}
         </DataTableBody>
       </DataTable>
+
+      {returns.length > 0 && (
+        <>
+          <h3 className="mb-3 mt-8 text-lg font-semibold">Returns</h3>
+          <DataTable>
+            <DataTableHead>
+              <tr>
+                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Refund</th>
+                <th className="px-4 py-3">Cash</th>
+                <th className="px-4 py-3">Credit adj.</th>
+                <th className="px-4 py-3">Account</th>
+                <th className="px-4 py-3">Notes</th>
+              </tr>
+            </DataTableHead>
+            <DataTableBody>
+              {returns.map((r) => (
+                <tr key={r.id}>
+                  <td className="px-4 py-3">{formatDate(r.return_date)}</td>
+                  <td className="px-4 py-3">{formatCurrency(r.refund_amount, currency)}</td>
+                  <td className="px-4 py-3">{formatCurrency(r.cash_refund, currency)}</td>
+                  <td className="px-4 py-3">{formatCurrency(r.credit_adjustment, currency)}</td>
+                  <td className="px-4 py-3">{r.account_name || "—"}</td>
+                  <td className="px-4 py-3 text-muted">{r.notes || "—"}</td>
+                </tr>
+              ))}
+            </DataTableBody>
+          </DataTable>
+        </>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   getDaysInBsMonth,
   toBS,
 } from "@/lib/nepali-date";
+import { useDateCalendar } from "@/components/providers/date-preference-provider";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -21,6 +22,62 @@ interface Props {
 }
 
 export function NepaliDateInput({
+  name,
+  defaultValue,
+  value,
+  onChange,
+  required,
+  allowEmpty,
+  className,
+  id,
+}: Props) {
+  const calendar = useDateCalendar();
+
+  if (calendar === "AD") {
+    const inputClass = cn(
+      "h-11 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+      className
+    );
+    if (value !== undefined) {
+      return (
+        <input
+          id={id}
+          name={name}
+          type="date"
+          required={required}
+          value={value}
+          onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+          className={inputClass}
+        />
+      );
+    }
+    return (
+      <input
+        id={id}
+        name={name}
+        type="date"
+        required={required}
+        defaultValue={defaultValue}
+        className={inputClass}
+      />
+    );
+  }
+
+  return (
+    <BsDateInput
+      name={name}
+      defaultValue={defaultValue}
+      value={value}
+      onChange={onChange}
+      required={required}
+      allowEmpty={allowEmpty}
+      className={className}
+      id={id}
+    />
+  );
+}
+
+function BsDateInput({
   name,
   defaultValue,
   value,

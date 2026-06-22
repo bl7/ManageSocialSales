@@ -7,19 +7,25 @@ import { Button } from "@/components/ui/button";
 import { SalesFilters } from "@/components/sales/sales-filters";
 import { SalesSummaryCards } from "@/components/sales/sales-summary-cards";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { getDateFormatters, getDateCalendar } from "@/lib/date-preference.server";
 
 interface Props {
   searchParams: Promise<{ dateFrom?: string; dateTo?: string; preset?: string; range?: string }>;
 }
 
-function resolveDates(params: { dateFrom?: string; dateTo?: string; preset?: string; range?: string }) {
-  return resolveListDateRange(params, { allowAll: true });
+function resolveDates(
+  params: { dateFrom?: string; dateTo?: string; preset?: string; range?: string },
+  calendar: "AD" | "BS"
+) {
+  return resolveListDateRange(params, { allowAll: true, dateCalendar: calendar });
 }
 
 export default async function SalesPage({ searchParams }: Props) {
   const params = await searchParams;
-  const { from: dateFrom, to: dateTo } = resolveDates(params);
+  const calendar = await getDateCalendar();
+  const { formatDate } = await getDateFormatters();
+  const { from: dateFrom, to: dateTo } = resolveDates(params, calendar);
 
   const [summary, sales, settings] = await Promise.all([
     getSalesSummary(dateFrom, dateTo),
@@ -32,7 +38,7 @@ export default async function SalesPage({ searchParams }: Props) {
   return (
     <ListPage>
       <PageHeader title="Sales" description="Revenue and profit by period">
-        <Link href="/sales/new"><Button>Record Sale</Button></Link>
+        <Link href="/pos/new"><Button>POS</Button></Link>
       </PageHeader>
 
       <ListFilterBar>
@@ -44,8 +50,8 @@ export default async function SalesPage({ searchParams }: Props) {
       {sales.length === 0 ? (
         <EmptyState
           message="No sales in this period."
-          actionLabel="Record a sale"
-          actionHref="/sales/new"
+          actionLabel="Open POS"
+          actionHref="/pos/new"
         />
       ) : (
         <DataTable>

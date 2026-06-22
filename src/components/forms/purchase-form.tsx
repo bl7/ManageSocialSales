@@ -31,6 +31,7 @@ interface LineItem {
   quantity: number;
   unit_cost: number;
 }
+const MONEY_PATTERN = /^\d*\.?\d{0,2}$/;
 
 interface PurchaseFormProps {
   variants: Variant[];
@@ -44,7 +45,8 @@ export function PurchaseForm({
   currency = "Rs.",
   suppliers = [],
   accounts = [],
-}: PurchaseFormProps) {
+  compact = false,
+}: PurchaseFormProps & { compact?: boolean }) {
   const router = useRouter();
   const today = todayISODate();
   const [error, setError] = useState("");
@@ -99,6 +101,11 @@ export function PurchaseForm({
         setPending(false);
         return;
       }
+      if (!Number.isFinite(item.unit_cost) || item.unit_cost < 0) {
+        setError("Enter a valid unit cost for every line item.");
+        setPending(false);
+        return;
+      }
     }
     if ((paymentMode === "credit" || paymentMode === "partial") && !partyId) {
       setError("Select a supplier for credit or partial payment.");
@@ -128,7 +135,9 @@ export function PurchaseForm({
 
   return (
     <div>
-      <PageHeader title="Record Purchase" description="Add incoming stock from suppliers" />
+      {!compact && (
+        <PageHeader title="Record Purchase" description="Add incoming stock from suppliers" />
+      )}
 
       <form onSubmit={handleSubmit} className="max-w-3xl">
         {error && <div className="mb-4"><ErrorMessage message={error} /></div>}
@@ -175,11 +184,19 @@ export function PurchaseForm({
                 <Label htmlFor="amount_paid_input">Amount Paid</Label>
                 <Input
                   id="amount_paid_input"
-                  type="number"
-                  min="0.01"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   value={amountPaid || ""}
-                  onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const next = e.target.value.trim();
+                    if (next === "") {
+                      setAmountPaid(0);
+                      return;
+                    }
+                    if (!MONEY_PATTERN.test(next)) return;
+                    const parsed = Number(next);
+                    if (!Number.isNaN(parsed)) setAmountPaid(parsed);
+                  }}
                 />
               </FormGroup>
             )}
@@ -226,8 +243,22 @@ export function PurchaseForm({
                 </FormGroup>
                 <FormGroup>
                   <Label>Unit Cost *</Label>
-                  <Input type="number" min="0" step="0.01" required value={item.unit_cost}
-                    onChange={(e) => updateItem(i, "unit_cost", parseFloat(e.target.value) || 0)} />
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    required
+                    value={item.unit_cost}
+                    onChange={(e) => {
+                      const next = e.target.value.trim();
+                      if (next === "") {
+                        updateItem(i, "unit_cost", 0);
+                        return;
+                      }
+                      if (!MONEY_PATTERN.test(next)) return;
+                      const parsed = Number(next);
+                      if (!Number.isNaN(parsed)) updateItem(i, "unit_cost", parsed);
+                    }}
+                  />
                 </FormGroup>
                 <div className="flex items-end justify-between sm:col-span-4">
                   <span className="text-sm text-muted">
@@ -245,7 +276,9 @@ export function PurchaseForm({
 
           <div className="mt-6 flex gap-3">
             <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Record Purchase"}</Button>
-            <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+            {!compact && (
+              <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+            )}
           </div>
         </fieldset>
       </form>

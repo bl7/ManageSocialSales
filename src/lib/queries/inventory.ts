@@ -464,3 +464,181 @@ export async function voidPurchase(purchaseId: string, voidReason: string): Prom
     );
   });
 }
+
+export interface SaleReturnItemInput {
+  sale_item_id: string;
+  quantity: number;
+}
+
+export async function recordSaleReturn(
+  saleId: string,
+  returnDate: string,
+  items: SaleReturnItemInput[],
+  options: { accountId?: string; notes?: string } = {}
+): Promise<string> {
+  return withTransaction(async (client) => {
+    const saleResult = await client.query(
+      `SELECT * FROM ${T.sales} WHERE id = $1 FOR UPDATE`,
+      [saleId]
+    );
+    const sale = saleResult.rows[0];
+    if (!sale) throw new Error("Sale not found");
+    if (sale.status === "voided") throw new Error("Cannot return items from a voided sale");
+
+    const saleItems = await client.query(
+      `SELECT * FROM ${T.saleItems} WHERE sale_id = $1`,
+      [saleId]
+    );
+    const itemMap = new Map(saleItems.rows.map((r) => [r.id as string, r]));
+
+    let refundAmount = 0;
+    const returnLines: {
+      saleItemId: string;
+      variantId: string;
+      quantity: number;
+      unitPrice: number;
+      lineRefund: number;
+    }[] = [];
+
+    for (const input of items) {
+      const row = itemMap.get(input.sale_item_id);
+      if (!row) throw new Error("Invalid sale line item");
+      const sold = Number(row.quantity);
+      const alreadyReturned = Number(row.returned_quantity ?? 0);
+      const returnable = sold - alreadyReturned;
+      if (input.quantity > returnable) {
+        throw new Error(`Cannot return ${input.quantity} units. Only ${returnable} returnable.`);
+      }
+      const unitPrice = Number(row.unit_sale_price);
+      const lineRefund = input.quantity * unitPrice;
+      refundAmount += lineRefund;
+      returnLines.push({
+        saleItemId: input.sale_item_id,
+        variantId: row.variant_id as string,
+        quantity: input.quantity,
+        unitPrice,
+        lineRefund,
+      });
+    }
+
+    if (refundAmount <= 0) throw new Error("Return amount must be greater than zero");
+
+    const totalAmount = Number(sale.total_amount);
+    const amountPaid = Number(sale.amount_paid ?? 0);
+    const amountRefunded = Number(sale.amount_refunded ?? 0);
+    const returnedValue = Number(sale.returned_value ?? 0);
+    const remainingValue = totalAmount - returnedValue;
+    const remainingPaid = Math.max(0, amountPaid - amountRefunded);
+
+    const cashRefund =
+      remainingValue > 0
+        ? Math.min(refundAmount, remainingPaid * (refundAmount / remainingValue))
+        : 0;
+    const creditAdjustment = refundAmount - cashRefund;
+
+    const returnId = uuidv4();
+
+    await client.query(
+      `INSERT INTO ${T.saleReturns}
+       (id, sale_id, return_date, refund_amount, cash_refund, credit_adjustment, account_id, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        returnId,
+        saleId,
+        returnDate,
+        refundAmount,
+        cashRefund,
+        creditAdjustment,
+        options.accountId || null,
+        options.notes || null,
+      ]
+    );
+
+    for (const line of returnLines) {
+      const returnItemId = uuidv4();
+      await client.query(
+        `INSERT INTO ${T.saleReturnItems}
+         (id, return_id, sale_item_id, variant_id, quantity, unit_refund_price, line_refund)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [
+          returnItemId,
+          returnId,
+          line.saleItemId,
+          line.variantId,
+          line.quantity,
+          line.unitPrice,
+          line.lineRefund,
+        ]
+      );
+
+      await client.query(
+        `UPDATE ${T.saleItems}
+         SET returned_quantity = returned_quantity + $1
+         WHERE id = $2`,
+        [line.quantity, line.saleItemId]
+      );
+
+      const currentStock = await getVariantStockClient(client, line.variantId);
+      const stockAfter = currentStock + line.quantity;
+
+      await client.query(
+        `INSERT INTO ${T.inventoryLedger}
+         (id, variant_id, movement_type, reference_type, reference_id,
+          quantity_change, stock_after, unit_sale_price, notes)
+         VALUES ($1, $2, 'sale_return', 'sale_return', $3, $4, $5, $6, $7)`,
+        [
+          uuidv4(),
+          line.variantId,
+          returnItemId,
+          line.quantity,
+          stockAfter,
+          line.unitPrice,
+          options.notes || null,
+        ]
+      );
+    }
+
+    if (sale.party_id && creditAdjustment > 0) {
+      await addPartyLedgerEntryClient(client, {
+        partyId: sale.party_id,
+        entryDate: returnDate,
+        entryType: "sale_return",
+        amount: creditAdjustment,
+        referenceType: "sale_return",
+        referenceId: returnId,
+        notes: options.notes || undefined,
+      });
+    }
+
+    if (cashRefund > 0) {
+      let accountId: string | undefined = options.accountId;
+      if (!accountId) {
+        accountId = (await resolveAccountIdForSaleClient(
+          client,
+          sale.payment_method_id as string | null,
+          cashRefund
+        )) ?? undefined;
+      }
+      if (!accountId) throw new Error("Select an account for the cash refund");
+      await addAccountLedgerEntryClient(client, {
+        accountId,
+        entryDate: returnDate,
+        entryType: "sale_refund",
+        amount: -cashRefund,
+        referenceType: "sale_return",
+        referenceId: returnId,
+        notes: options.notes || undefined,
+      });
+    }
+
+    await client.query(
+      `UPDATE ${T.sales}
+       SET amount_refunded = amount_refunded + $1,
+           returned_value = returned_value + $2
+       WHERE id = $3`,
+      [cashRefund, refundAmount, saleId]
+    );
+
+    return returnId;
+  });
+}

@@ -68,6 +68,7 @@ export function LedgerFilters({
           <option value="adjustment">Stock Correction</option>
           <option value="sale_void">Sale Void</option>
           <option value="purchase_void">Purchase Void</option>
+          <option value="sale_return">Sale Return</option>
         </select>
         <NepaliDateInput name="dateFrom" defaultValue={dateFrom} allowEmpty={!dateFrom} />
         <NepaliDateInput name="dateTo" defaultValue={dateTo} allowEmpty={!dateTo} />

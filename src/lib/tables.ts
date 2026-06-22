@@ -1,4 +1,4 @@
-/** COUNTER app tables use the bij_ prefix (shared database). */
+/** EASY LOG app tables use the bij_ prefix (shared database). */
 export const T = {
   appUser: "bij_app_user",
   products: "bij_products",
@@ -24,4 +24,6 @@ export const T = {
   investmentAllocations: "bij_investment_allocations",
   accountTransfers: "bij_account_transfers",
   profitWithdrawals: "bij_profit_withdrawals",
+  saleReturns: "bij_sale_returns",
+  saleReturnItems: "bij_sale_return_items",
 } as const;

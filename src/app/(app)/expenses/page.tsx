@@ -8,20 +8,26 @@ import { Button } from "@/components/ui/button";
 import { PeriodFilters } from "@/components/ui/period-filters";
 import { ExpensesSummaryCards } from "@/components/expenses/expenses-summary-cards";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { getDateFormatters, getDateCalendar } from "@/lib/date-preference.server";
 import { ExpenseForm } from "@/components/forms/expense-form";
 
 interface Props {
   searchParams: Promise<{ dateFrom?: string; dateTo?: string; preset?: string; new?: string }>;
 }
 
-function resolveDates(params: { dateFrom?: string; dateTo?: string; preset?: string }) {
-  return resolveListDateRange(params);
+function resolveDates(
+  params: { dateFrom?: string; dateTo?: string; preset?: string },
+  calendar: "AD" | "BS"
+) {
+  return resolveListDateRange(params, { dateCalendar: calendar });
 }
 
 export default async function ExpensesPage({ searchParams }: Props) {
   const params = await searchParams;
-  const { from: dateFrom, to: dateTo } = resolveDates(params);
+  const calendar = await getDateCalendar();
+  const { formatDate } = await getDateFormatters();
+  const { from: dateFrom, to: dateTo } = resolveDates(params, calendar);
 
   const [expenses, total, categories, accounts, settings] = await Promise.all([
     getExpenses(dateFrom, dateTo),

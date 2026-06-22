@@ -2,7 +2,8 @@ import { requireApiAuth } from "@/lib/api-auth";
 import { toCsv, csvResponse } from "@/lib/csv";
 import { getLedgerEntries } from "@/lib/queries/ledger";
 import { getSettings } from "@/lib/queries/dashboard";
-import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { getDateFormatters } from "@/lib/date-preference.server";
 
 export async function GET(request: Request) {
   const authError = await requireApiAuth();
@@ -18,7 +19,8 @@ export async function GET(request: Request) {
     dateTo: searchParams.get("dateTo") || undefined,
   };
 
-  const [entries, settings] = await Promise.all([
+  const [{ formatDateTime }, entries, settings] = await Promise.all([
+    getDateFormatters(),
     getLedgerEntries(filters, 5000),
     getSettings(),
   ]);

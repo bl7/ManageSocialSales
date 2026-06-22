@@ -1,5 +1,6 @@
 import { query } from "@/lib/db";
-import { getCurrentNepaliMonthRange } from "@/lib/nepali-date";
+import { getCurrentMonthRange } from "@/lib/date-ranges";
+import type { DateCalendar } from "@/lib/date-calendar";
 import { T } from "@/lib/tables";
 import { getLedgerEntries } from "./ledger";
 
@@ -17,8 +18,8 @@ export async function getSalesChartData(days = 30) {
   `, [days]);
 }
 
-export async function getPlatformChartData() {
-  const { from: monthStartStr } = getCurrentNepaliMonthRange();
+export async function getPlatformChartData(calendar: DateCalendar = "BS") {
+  const { from: monthStartStr } = getCurrentMonthRange(calendar);
 
   return query<{ platform: string; revenue: string; count: string }>(`
     SELECT

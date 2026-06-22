@@ -16,7 +16,8 @@ export type AccountEntryType =
   | "purchase_void"
   | "transfer_in"
   | "transfer_out"
-  | "profit_withdrawal";
+  | "profit_withdrawal"
+  | "sale_refund";
 
 export interface AccountRow {
   id: string;
@@ -200,6 +201,7 @@ const ENTRY_TYPE_LABELS: Record<AccountEntryType, string> = {
   transfer_in: "Transfer in",
   transfer_out: "Transfer out",
   profit_withdrawal: "Profit withdrawal",
+  sale_refund: "Sale refund",
 };
 
 export function getAccountEntryLabel(entryType: string): string {

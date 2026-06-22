@@ -1,6 +1,6 @@
-# COUNTER
+# EASY LOG
 
-Internal business counter for inventory, sales, purchases, parties, expenses, and cash ledger.
+Internal business platform for inventory, sales, purchases, parties, expenses, and cash ledger.
 
 ## Tech Stack
 
@@ -32,19 +32,19 @@ cp .env.example .env
 
 Required variables:
 
-| Variable | Description |
-|----------|-------------|
-| `PGHOST` | PostgreSQL host |
-| `PGPORT` | PostgreSQL port (default 5432) |
-| `PGDATABASE` | Database name |
-| `PGUSER` | Database username |
-| `PGPASSWORD` | Database password |
-| `PGSSLMODE` | `disable`, `prefer`, or `require` |
-| `JWT_SECRET` | Secret for signing session tokens |
+| Variable         | Description                                  |
+| ---------------- | -------------------------------------------- |
+| `PGHOST`         | PostgreSQL host                              |
+| `PGPORT`         | PostgreSQL port (default 5432)               |
+| `PGDATABASE`     | Database name                                |
+| `PGUSER`         | Database username                            |
+| `PGPASSWORD`     | Database password                            |
+| `PGSSLMODE`      | `disable`, `prefer`, or `require`            |
+| `JWT_SECRET`     | Secret for signing session tokens            |
 | `SESSION_SECRET` | Fallback secret (optional if JWT_SECRET set) |
-| `NODE_ENV` | `development` or `production` |
-| `ADMIN_EMAIL` | Login email for seed script |
-| `ADMIN_PASSWORD` | Login password for seed script |
+| `NODE_ENV`       | `development` or `production`                |
+| `ADMIN_EMAIL`    | Login email for seed script                  |
+| `ADMIN_PASSWORD` | Login password for seed script               |
 
 Alternatively, set `DATABASE_URL` instead of the `PG*` variables.
 
@@ -74,13 +74,13 @@ Open [http://localhost:3000](http://localhost:3000) and sign in with your admin 
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Production build |
-| `npm run start` | Start production server |
-| `npm run db:migrate` | Run database migrations |
-| `npm run db:seed` | Seed admin user and sample data |
+| Command              | Description                     |
+| -------------------- | ------------------------------- |
+| `npm run dev`        | Start development server        |
+| `npm run build`      | Production build                |
+| `npm run start`      | Start production server         |
+| `npm run db:migrate` | Run database migrations         |
+| `npm run db:seed`    | Seed admin user and sample data |
 
 ## Pages
 
@@ -90,7 +90,7 @@ Open [http://localhost:3000](http://localhost:3000) and sign in with your admin 
 - **Product Detail** — Variants, stock, recent movements
 - **Add/Edit Product** — Product and variant management
 - **Record Purchase** — Incoming stock
-- **Record Sale** — Outgoing stock (Instagram, WhatsApp, etc.)
+- **POS** — Point of sale (outgoing stock)
 - **Stock Adjustment** — Damaged, lost, returned, corrections
 - **Stock Ledger** — Complete inventory movement history
 - **Reports** — Best sellers, slow movers, valuation, revenue, profit

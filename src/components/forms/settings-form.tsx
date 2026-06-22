@@ -18,6 +18,7 @@ interface SettingsFormProps {
     business_email?: string | null;
     logo_url?: string | null;
     invoice_prefix?: string | null;
+    date_calendar: "AD" | "BS";
   };
   section: "profile" | "invoice" | "preferences";
 }
@@ -51,6 +52,7 @@ export function SettingsForm({ settings, section }: SettingsFormProps) {
         <>
           {hidden("currency", settings.currency)}
           {hidden("low_stock_default", settings.low_stock_default)}
+          {hidden("date_calendar", settings.date_calendar)}
         </>
       )}
 
@@ -94,6 +96,19 @@ export function SettingsForm({ settings, section }: SettingsFormProps) {
             <FormGroup>
               <Label htmlFor="low_stock_default">Default Low Stock Threshold</Label>
               <Input id="low_stock_default" name="low_stock_default" type="number" min="0" required defaultValue={settings.low_stock_default} />
+            </FormGroup>
+            <FormGroup>
+              <Label htmlFor="date_calendar">Date calendar</Label>
+              <select
+                id="date_calendar"
+                name="date_calendar"
+                defaultValue={settings.date_calendar}
+                className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              >
+                <option value="BS">Bikram Sambat (BS)</option>
+                <option value="AD">Gregorian (AD)</option>
+              </select>
+              <p className="mt-1 text-xs text-muted">Controls how dates appear across the app.</p>
             </FormGroup>
           </>
         )}

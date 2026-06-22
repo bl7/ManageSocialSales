@@ -17,8 +17,8 @@ import { TransactionSummaryCards } from "@/components/transactions/transaction-s
 import { AccountBalancesGrid } from "@/components/transactions/account-balances-grid";
 import { TransferForm } from "@/components/forms/transfer-form";
 import { WithdrawalForm } from "@/components/forms/withdrawal-form";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
+import { getDateFormatters, getDateCalendar } from "@/lib/date-preference.server";
 
 interface Props {
   searchParams: Promise<{
@@ -56,7 +56,9 @@ export default async function TransactionsPage({ searchParams }: Props) {
     );
   }
 
-  const { from: dateFrom, to: dateTo } = resolveListDateRange(params);
+  const calendar = await getDateCalendar();
+  const { formatDate } = await getDateFormatters();
+  const { from: dateFrom, to: dateTo } = resolveListDateRange(params, { dateCalendar: calendar });
 
   const direction =
     params.direction === "in" || params.direction === "out" ? params.direction : undefined;
@@ -112,8 +114,8 @@ export default async function TransactionsPage({ searchParams }: Props) {
       {transactions.length === 0 ? (
         <EmptyState
           message="No transactions in this period."
-          actionLabel="Record a sale"
-          actionHref="/sales/new"
+          actionLabel="Open POS"
+          actionHref="/pos/new"
         />
       ) : (
         <DataTable>

@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn, formatCurrency } from "@/lib/utils";
-import { formatNepaliMonthLong } from "@/lib/nepali-date";
+import { useFormatDate } from "@/components/providers/date-preference-provider";
 import { logoutAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import {
   LayoutDashboard,
+  Lightbulb,
   ArrowLeftRight,
   Shirt,
   PackagePlus,
@@ -32,6 +33,7 @@ import {
 
 const mainNav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/insights", label: "Insights", icon: Lightbulb },
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
   { href: "/products", label: "Products", icon: Shirt },
   { href: "/sales", label: "Sales", icon: Receipt },
@@ -49,9 +51,11 @@ const mobileMore = mainNav.slice(4);
 
 function isNavActive(pathname: string, href: string) {
   if (href === "/dashboard") return pathname === "/dashboard";
+  if (href === "/insights")
+    return pathname === "/insights" || pathname.startsWith("/insights/");
   if (href === "/transactions") return pathname === "/transactions";
   if (href === "/sales")
-    return pathname === "/sales" || pathname.startsWith("/sales/");
+    return pathname === "/sales" || pathname.startsWith("/sales/") || pathname.startsWith("/pos/");
   if (href === "/purchases")
     return pathname === "/purchases" || pathname.startsWith("/purchases/");
   if (href === "/settings")
@@ -77,6 +81,7 @@ export function Sidebar({
   currency?: string;
 }) {
   const pathname = usePathname();
+  const { formatMonthLong } = useFormatDate();
   const { collapsed, toggleCollapsed, width } = useSidebar();
   const [open, setOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -137,30 +142,39 @@ export function Sidebar({
           <>
             <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
               <p className="text-xs text-sidebar-muted">
-                {formatNepaliMonthLong()} revenue
+                {formatMonthLong()} revenue
               </p>
               <p className="mt-1 text-base font-semibold text-sidebar-foreground">
                 {formatCurrency(monthRevenue, currency)}
               </p>
             </div>
             <Link
-              href="/sales/new"
+              href="/pos/new"
               onClick={() => setOpen(false)}
               className="mt-3 block"
             >
               <Button className="w-full justify-center">
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                Record Sale
+                POS
+              </Button>
+            </Link>
+            <Link
+              href="/quick-entry"
+              onClick={() => setOpen(false)}
+              className="mt-2 block"
+            >
+              <Button variant="outline" className="w-full justify-center">
+                Quick Entry
               </Button>
             </Link>
           </>
         )}
         {collapsed && !mobile && (
           <Link
-            href="/sales/new"
+            href="/pos/new"
             onClick={() => setOpen(false)}
             className="mt-4 flex justify-center"
-            title="Record Sale"
+            title="POS"
           >
             <Button size="sm" className="h-10 w-10 p-0">
               <ShoppingCart className="h-4 w-4" />
@@ -308,12 +322,19 @@ export function Sidebar({
               );
             })}
             <Link
-              href="/sales/new"
+              href="/pos/new"
               onClick={() => setMoreOpen(false)}
               className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-primary hover:bg-teal-50"
             >
               <ShoppingCart className="h-5 w-5" />
-              Record Sale
+              POS
+            </Link>
+            <Link
+              href="/quick-entry"
+              onClick={() => setMoreOpen(false)}
+              className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-slate-50"
+            >
+              Quick Entry
             </Link>
           </div>
         </div>

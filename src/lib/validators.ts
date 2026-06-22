@@ -58,6 +58,19 @@ export const saleSchema = z.object({
   items: z.array(saleItemSchema).min(1, "Add at least one item"),
 });
 
+export const saleReturnItemSchema = z.object({
+  sale_item_id: z.string().uuid(),
+  quantity: z.coerce.number().int().positive("Quantity must be positive"),
+});
+
+export const saleReturnSchema = z.object({
+  sale_id: z.string().uuid(),
+  return_date: z.string().min(1, "Date is required"),
+  account_id: z.string().uuid().optional().or(z.literal("")),
+  notes: z.string().optional(),
+  items: z.array(saleReturnItemSchema).min(1, "Select at least one item to return"),
+});
+
 export const salePaymentMethodSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   account_id: z.string().uuid().optional().or(z.literal("")),
@@ -165,6 +178,7 @@ export const settingsSchema = z.object({
   business_email: z.string().email("Invalid email").optional().or(z.literal("")),
   logo_url: z.string().url("Invalid URL").optional().or(z.literal("")),
   invoice_prefix: z.string().optional(),
+  date_calendar: z.enum(["AD", "BS"]),
 });
 
 export function formatZodErrors(error: z.ZodError): string {

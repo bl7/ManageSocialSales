@@ -8,6 +8,7 @@ import { SettingsAccountsPanel } from "@/components/settings/settings-accounts-p
 import { SettingsExpenseCategoriesPanel } from "@/components/settings/settings-expense-categories-panel";
 import { PageHeader } from "@/components/ui/page";
 import { DEFAULT_BUSINESS_NAME } from "@/lib/branding";
+import { parseDateCalendar } from "@/lib/date-calendar";
 
 interface Props {
   searchParams: Promise<{ tab?: string }>;
@@ -33,6 +34,7 @@ export default async function SettingsPage({ searchParams }: Props) {
     business_email: settings?.business_email,
     logo_url: settings?.logo_url,
     invoice_prefix: settings?.invoice_prefix,
+    date_calendar: parseDateCalendar(settings?.date_calendar),
   };
   const tabDescriptions: Record<SettingsTab, string> = {
     profile: "Business identity and contact details",
@@ -41,7 +43,7 @@ export default async function SettingsPage({ searchParams }: Props) {
     "payment-methods": "Manage sale payment methods",
     accounts: "Cash, bank, and digital wallet balances",
     "expense-categories": "Manage expense category options",
-    preferences: "Currency and application defaults",
+    preferences: "Currency, dates, and application defaults",
   };
 
   return (

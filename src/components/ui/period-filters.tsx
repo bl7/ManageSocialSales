@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { NepaliDateInput } from "@/components/ui/nepali-date-input";
+import { useDateCalendar } from "@/components/providers/date-preference-provider";
 import { SALES_DATE_PRESETS, matchesPreset } from "@/lib/date-ranges";
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 
 export function PeriodFilters({ dateFrom, dateTo, basePath = "/purchases" }: Props) {
   const router = useRouter();
+  const calendar = useDateCalendar();
 
   function applyPreset(preset: string) {
     router.push(`${basePath}?preset=${preset}`);
@@ -26,7 +28,7 @@ export function PeriodFilters({ dateFrom, dateTo, basePath = "/purchases" }: Pro
           <Button
             key={p.id}
             type="button"
-            variant={matchesPreset(dateFrom, dateTo, p.id) ? "default" : "outline"}
+            variant={matchesPreset(dateFrom, dateTo, p.id, calendar) ? "default" : "outline"}
             size="sm"
             onClick={() => applyPreset(p.id)}
           >

@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardValue } from "@/components/ui/card";
 import { PaymentForm } from "@/components/forms/payment-form";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { getDateFormatters } from "@/lib/date-preference.server";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -33,6 +34,7 @@ export default async function PartyDetailPage({ params }: Props) {
 
   if (!party) notFound();
 
+  const { formatDate } = await getDateFormatters();
   const currency = settings?.currency ?? "Rs.";
   const balance = party.current_balance ?? 0;
   const defaultDirection =

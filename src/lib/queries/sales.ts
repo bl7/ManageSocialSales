@@ -122,6 +122,7 @@ export async function getSaleItems(saleId: string) {
   return query<{
     id: string;
     quantity: number;
+    returned_quantity: number;
     unit_sale_price: string;
     line_total: string;
     product_name: string;
@@ -133,6 +134,7 @@ export async function getSaleItems(saleId: string) {
     SELECT
       si.id,
       si.quantity,
+      COALESCE(si.returned_quantity, 0)::int AS returned_quantity,
       si.unit_sale_price,
       si.line_total,
       p.name AS product_name,
@@ -145,5 +147,24 @@ export async function getSaleItems(saleId: string) {
     JOIN ${T.products} p ON p.id = pv.product_id
     WHERE si.sale_id = $1
     ORDER BY p.name, pv.size, pv.color
+  `, [saleId]);
+}
+
+export async function getSaleReturns(saleId: string) {
+  return query<{
+    id: string;
+    return_date: string;
+    refund_amount: string;
+    cash_refund: string;
+    credit_adjustment: string;
+    notes: string | null;
+    created_at: string;
+    account_name: string | null;
+  }>(`
+    SELECT sr.*, a.name AS account_name
+    FROM ${T.saleReturns} sr
+    LEFT JOIN ${T.accounts} a ON a.id = sr.account_id
+    WHERE sr.sale_id = $1
+    ORDER BY sr.return_date DESC, sr.created_at DESC
   `, [saleId]);
 }

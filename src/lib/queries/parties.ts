@@ -3,7 +3,7 @@ import { query, queryOne } from "@/lib/db";
 import { T } from "@/lib/tables";
 
 export type PartyType = "customer" | "supplier" | "both";
-export type LedgerEntryType = "sale" | "purchase" | "payment_in" | "payment_out" | "opening" | "sale_void" | "purchase_void";
+export type LedgerEntryType = "sale" | "purchase" | "payment_in" | "payment_out" | "opening" | "sale_void" | "purchase_void" | "sale_return";
 
 export interface PartyRow {
   id: string;
@@ -65,6 +65,14 @@ export async function getPartiesForSelect(type: "customer" | "supplier") {
   `);
 }
 
+export async function getAllPartiesForSelect() {
+  return query<{ id: string; name: string; phone: string | null }>(`
+    SELECT id, name, phone FROM ${T.parties}
+    WHERE is_active = true
+    ORDER BY name
+  `);
+}
+
 export async function getPartyById(id: string) {
   const row = await queryOne<PartyRow>(`SELECT * FROM ${T.parties} WHERE id = $1`, [id]);
   if (!row) return null;
@@ -116,7 +124,7 @@ export async function addPartyLedgerEntryClient(
   let balanceAfter = current;
   if (["sale", "purchase", "opening"].includes(data.entryType)) {
     balanceAfter = current + data.amount;
-  } else if (["sale_void", "purchase_void", "payment_in", "payment_out"].includes(data.entryType)) {
+  } else if (["sale_void", "purchase_void", "payment_in", "payment_out", "sale_return"].includes(data.entryType)) {
     balanceAfter = current - data.amount;
   } else {
     balanceAfter = current - data.amount;

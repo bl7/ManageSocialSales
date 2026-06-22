@@ -2,16 +2,18 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useDateCalendar } from "@/components/providers/date-preference-provider";
 import { getDateRange, REPORT_DATE_PRESETS, matchesPreset } from "@/lib/date-ranges";
 
 export function ReportDatePresets() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const calendar = useDateCalendar();
   const dateFrom = searchParams.get("dateFrom") || "";
   const dateTo = searchParams.get("dateTo") || "";
 
   function apply(preset: string) {
-    const range = getDateRange(preset);
+    const range = getDateRange(preset, calendar);
     const params = new URLSearchParams(searchParams.toString());
     if (range) {
       params.set("dateFrom", range.from);
@@ -30,7 +32,7 @@ export function ReportDatePresets() {
         <Button
           key={p.id}
           type="button"
-          variant={dateFrom && dateTo && matchesPreset(dateFrom, dateTo, p.id) ? "default" : "outline"}
+          variant={dateFrom && dateTo && matchesPreset(dateFrom, dateTo, p.id, calendar) ? "default" : "outline"}
           size="sm"
           onClick={() => apply(p.id)}
         >

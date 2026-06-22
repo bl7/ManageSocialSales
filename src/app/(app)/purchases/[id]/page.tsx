@@ -6,7 +6,8 @@ import { PageHeader } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { VoidPurchaseButton } from "@/components/purchases/void-purchase-button";
 import { DataTable, DataTableHead, DataTableBody } from "@/components/ui/data-table";
-import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { getDateFormatters } from "@/lib/date-preference.server";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -22,6 +23,7 @@ export default async function PurchaseDetailPage({ params }: Props) {
 
   if (!purchase) notFound();
 
+  const { formatDate, formatDateTime } = await getDateFormatters();
   const currency = settings?.currency ?? "Rs.";
   const p = purchase as Record<string, unknown>;
   const isVoided = p.status === "voided";
